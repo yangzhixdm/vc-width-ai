@@ -383,7 +383,13 @@ const GameTable = ({ gameId, onGameEnd }) => {
             {myPlayer.holeCards && myPlayer.holeCards.length > 0 ? (
               myPlayer.holeCards.map((card, index) => (
                 <div key={index} className="my-hole-card">
-                  {card}
+                  <div className="card-value">{card.value}</div>
+                  <div className={`card-suit ${card.suit}`}>
+                    {card.suit === 'hearts' ? '♥' : 
+                     card.suit === 'diamonds' ? '♦' : 
+                     card.suit === 'clubs' ? '♣' : 
+                     card.suit === 'spades' ? '♠' : card.suit}
+                  </div>
                 </div>
               ))
             ) : (
@@ -495,21 +501,14 @@ const GameTable = ({ gameId, onGameEnd }) => {
         />
       )}
 
-      {showHoleCardsSelector && (myPlayerId ? (
+      {showHoleCardsSelector && (
         <HoleCardsSelector
-          player={myPlayer}
-          onConfirm={handleSetMyHoleCards}
+          player={myPlayerId ? myPlayer : currentPlayer}
+          onConfirm={myPlayerId ? handleSetMyHoleCards : handleHoleCardsConfirm}
           onCancel={() => setShowHoleCardsSelector(false)}
           usedCards={getAllUsedCards()}
         />
-      ) : currentPlayer && (
-        <HoleCardsSelector
-          player={currentPlayer}
-          onConfirm={handleHoleCardsConfirm}
-          onCancel={() => setShowHoleCardsSelector(false)}
-          usedCards={getAllUsedCards()}
-        />
-      ))}
+      )}
 
       {showCommunityCardsSelector && gameState && (
         <CommunityCardsSelector

@@ -55,7 +55,13 @@ const CardSelector = ({
 
   const handleConfirm = () => {
     if (selectedCards.length > 0) {
-      onCardSelect(selectedCards[0]); // For single card selection
+      // If maxSelections is 1, pass the first card
+      // If maxSelections is 2, pass all selected cards
+      if (maxSelections === 1) {
+        onCardSelect(selectedCards[0]);
+      } else {
+        onCardSelect(selectedCards);
+      }
       setSelectedCards([]);
     }
   };

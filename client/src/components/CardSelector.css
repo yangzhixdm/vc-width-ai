@@ -26,6 +26,25 @@
   overflow-y: auto;
 }
 
+/* 当 CardSelector 在 HoleCardsSelector 内部使用时 */
+.hole-cards-selector-card .card-selector-overlay {
+  position: static;
+  background: none;
+  backdrop-filter: none;
+  display: block;
+}
+
+.hole-cards-selector-card .card-selector-card {
+  background: none;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+  max-width: none;
+  width: 100%;
+  max-height: none;
+  overflow-y: visible;
+}
+
 .card-selector-header {
   display: flex;
   justify-content: space-between;
@@ -61,10 +80,23 @@
   margin-bottom: 30px;
 }
 
+/* 在 HoleCardsSelector 中的紧凑布局 */
+.hole-cards-selector-card .card-selector-suits {
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
 .card-selector-suit-section {
   background: rgba(255, 255, 255, 0.05);
   border-radius: 12px;
   padding: 20px;
+}
+
+/* 在 HoleCardsSelector 中的紧凑样式 */
+.hole-cards-selector-card .card-selector-suit-section {
+  padding: 10px;
+  border-radius: 8px;
 }
 
 .card-selector-suit-title {
@@ -75,6 +107,12 @@
   text-align: center;
   text-transform: uppercase;
   letter-spacing: 1px;
+}
+
+/* 在 HoleCardsSelector 中的紧凑标题 */
+.hole-cards-selector-card .card-selector-suit-title {
+  font-size: 0.9rem;
+  margin-bottom: 8px;
 }
 
 .card-selector-suit-title.hearts,
@@ -93,6 +131,12 @@
   gap: 8px;
 }
 
+/* 在 HoleCardsSelector 中的紧凑网格 */
+.hole-cards-selector-card .card-selector-cards-grid {
+  grid-template-columns: repeat(13, 1fr);
+  gap: 4px;
+}
+
 .card-selector-card-button {
   width: 100%;
   aspect-ratio: 0.7;
@@ -109,6 +153,12 @@
   font-size: 12px;
   font-weight: bold;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* 在 HoleCardsSelector 中的紧凑按钮 */
+.hole-cards-selector-card .card-selector-card-button {
+  aspect-ratio: 0.6;
+  font-size: 10px;
 }
 
 .card-selector-card-button:hover {

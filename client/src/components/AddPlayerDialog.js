@@ -10,7 +10,7 @@ const AddPlayerDialog = ({
   currentPlayerCount = 0
 }) => {
   const [playerName, setPlayerName] = useState('');
-  const [initialChips, setInitialChips] = useState(1000);
+  const [initialChips, setInitialChips] = useState(2000);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -22,7 +22,7 @@ const AddPlayerDialog = ({
         avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${playerName}`
       });
       setPlayerName('');
-      setInitialChips(1000);
+      setInitialChips(2000);
     }
   };
 
