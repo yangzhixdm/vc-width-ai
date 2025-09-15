@@ -1,0 +1,220 @@
+const GameService = require('../services/GameService');
+const AIService = require('../services/AIService');
+
+class GameController {
+  // Create a new game
+  async createGame(ctx) {
+    try {
+      const { smallBlind = 10, bigBlind = 20 } = ctx.request.body;
+      const game = await GameService.createGame(smallBlind, bigBlind);
+      
+      ctx.status = 201;
+      ctx.body = {
+        success: true,
+        data: game
+      };
+    } catch (error) {
+      ctx.status = 400;
+      ctx.body = {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+
+  // Get game state
+  async getGameState(ctx) {
+    try {
+      const { gameId } = ctx.params;
+      const gameState = await GameService.getGameState(gameId);
+      
+      ctx.body = {
+        success: true,
+        data: gameState
+      };
+    } catch (error) {
+      ctx.status = 404;
+      ctx.body = {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+
+  // Add player to game
+  async addPlayer(ctx) {
+    try {
+      const { gameId } = ctx.params;
+      const playerData = ctx.request.body;
+      
+      const player = await GameService.addPlayer(gameId, playerData);
+      
+      ctx.status = 201;
+      ctx.body = {
+        success: true,
+        data: player
+      };
+    } catch (error) {
+      ctx.status = 400;
+      ctx.body = {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+
+  // Start game
+  async startGame(ctx) {
+    try {
+      const { gameId } = ctx.params;
+      const game = await GameService.startGame(gameId);
+      
+      ctx.body = {
+        success: true,
+        data: game
+      };
+    } catch (error) {
+      ctx.status = 400;
+      ctx.body = {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+
+  // Make player action
+  async makeAction(ctx) {
+    try {
+      const { gameId, playerId } = ctx.params;
+      const { actionType, amount = 0, round } = ctx.request.body;
+      
+      const action = await GameService.makeAction(gameId, playerId, actionType, amount, round);
+      
+      ctx.body = {
+        success: true,
+        data: action
+      };
+    } catch (error) {
+      ctx.status = 400;
+      ctx.body = {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+
+  // Deal community cards
+  async dealCommunityCards(ctx) {
+    try {
+      const { gameId } = ctx.params;
+      const { round } = ctx.request.body;
+      
+      const newCards = await GameService.dealCommunityCards(gameId, round);
+      
+      ctx.body = {
+        success: true,
+        data: { newCards }
+      };
+    } catch (error) {
+      ctx.status = 400;
+      ctx.body = {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+
+  // Get AI recommendation
+  async getAIRecommendation(ctx) {
+    try {
+      const { gameId, playerId } = ctx.params;
+      const { currentRound } = ctx.request.body;
+      
+      const recommendation = await AIService.getBettingRecommendation(gameId, playerId, currentRound);
+      
+      ctx.body = {
+        success: true,
+        data: recommendation
+      };
+    } catch (error) {
+      ctx.status = 500;
+      ctx.body = {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+
+  // Get pot size suggestions
+  async getPotSizeSuggestions(ctx) {
+    try {
+      const { gameId } = ctx.params;
+      const gameState = await GameService.getGameState(gameId);
+      
+      const pot = gameState.game.currentPot;
+      const suggestions = {
+        '1/3 pot': Math.floor(pot / 3),
+        '1/2 pot': Math.floor(pot / 2),
+        '2/3 pot': Math.floor(pot * 2 / 3),
+        '1x pot': pot,
+        '1.5x pot': Math.floor(pot * 1.5),
+        '2x pot': pot * 2
+      };
+      
+      ctx.body = {
+        success: true,
+        data: suggestions
+      };
+    } catch (error) {
+      ctx.status = 400;
+      ctx.body = {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+
+  // Set player hole cards
+  async setHoleCards(ctx) {
+    try {
+      const { gameId, playerId } = ctx.params;
+      const { holeCards } = ctx.request.body;
+      
+      const player = await GameService.setPlayerHoleCards(gameId, playerId, holeCards);
+      
+      ctx.body = {
+        success: true,
+        data: player
+      };
+    } catch (error) {
+      ctx.status = 400;
+      ctx.body = {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+
+  // Set community cards manually
+  async setCommunityCards(ctx) {
+    try {
+      const { gameId } = ctx.params;
+      const { cards, round } = ctx.request.body;
+      
+      const game = await GameService.setCommunityCards(gameId, cards, round);
+      
+      ctx.body = {
+        success: true,
+        data: game
+      };
+    } catch (error) {
+      ctx.status = 400;
+      ctx.body = {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+}
+
+module.exports = new GameController();

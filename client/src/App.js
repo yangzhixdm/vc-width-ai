@@ -1,0 +1,70 @@
+import React, { useState, useEffect } from 'react';
+import styled from 'styled-components';
+import GameTable from './components/GameTable';
+import GameSetup from './components/GameSetup';
+import { GameProvider } from './hooks/useGame';
+import './App.css';
+
+const AppContainer = styled.div`
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0f4c3a 0%, #1a5f4a 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+`;
+
+const Header = styled.header`
+  text-align: center;
+  margin-bottom: 30px;
+`;
+
+const Title = styled.h1`
+  color: #f4e4bc;
+  font-size: 2.5rem;
+  margin: 0;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+`;
+
+const Subtitle = styled.p`
+  color: #d4c4a8;
+  font-size: 1.1rem;
+  margin: 10px 0 0 0;
+`;
+
+function App() {
+  const [gameId, setGameId] = useState(null);
+  const [isGameActive, setIsGameActive] = useState(false);
+
+  const handleGameStart = (newGameId) => {
+    setGameId(newGameId);
+    setIsGameActive(true);
+  };
+
+  const handleGameEnd = () => {
+    setGameId(null);
+    setIsGameActive(false);
+  };
+
+  return (
+    <AppContainer>
+      <Header>
+        <Title>🃏 Texas Hold'em AI Assistant</Title>
+        <Subtitle>Play poker with AI-powered betting recommendations</Subtitle>
+      </Header>
+      
+      <GameProvider>
+        {!isGameActive ? (
+          <GameSetup onGameStart={handleGameStart} />
+        ) : (
+          <GameTable 
+            gameId={gameId} 
+            onGameEnd={handleGameEnd}
+          />
+        )}
+      </GameProvider>
+    </AppContainer>
+  );
+}
+
+export default App;

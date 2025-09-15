@@ -1,0 +1,32 @@
+{
+  "name": "vc-width-ai",
+  "version": "1.0.0",
+  "description": "Texas Hold'em AI Assistant with LLM-powered betting recommendations",
+  "main": "server/index.js",
+  "scripts": {
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "cd server && npm run dev",
+    "client": "cd client && npm start",
+    "build": "cd client && npm run build",
+    "install-all": "npm install && cd server && npm install && cd ../client && npm install",
+    "init-db": "cd server && npm run init-db",
+    "reset-db": "cd server && npm run reset-db",
+    "seed-db": "cd server && npm run seed-db",
+    "setup-db": "cd server && npm run setup-db",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yangzhixdm/vc-width-ai.git"
+  },
+  "keywords": ["poker", "ai", "texas-holdem", "llm", "gaming"],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/yangzhixdm/vc-width-ai/issues"
+  },
+  "homepage": "https://github.com/yangzhixdm/vc-width-ai#readme",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
