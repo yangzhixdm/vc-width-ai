@@ -21,13 +21,6 @@ const SetupCard = styled.div`
   width: 100%;
 `;
 
-const Title = styled.h2`
-  color: #f4e4bc;
-  text-align: center;
-  margin-bottom: 30px;
-  font-size: 1.8rem;
-`;
-
 const FormGroup = styled.div`
   margin-bottom: 20px;
 `;
@@ -57,28 +50,6 @@ const Input = styled.input`
 
   &::placeholder {
     color: rgba(255, 255, 255, 0.6);
-  }
-`;
-
-const Select = styled.select`
-  width: 100%;
-  padding: 12px 16px;
-  border: 2px solid #2d7a5f;
-  border-radius: 8px;
-  font-size: 16px;
-  background: rgba(255, 255, 255, 0.1);
-  color: white;
-  transition: all 0.2s ease;
-
-  &:focus {
-    outline: none;
-    border-color: #4a9eff;
-    box-shadow: 0 0 0 3px rgba(74, 158, 255, 0.2);
-  }
-
-  option {
-    background: #1a5f4a;
-    color: white;
   }
 `;
 
@@ -197,10 +168,7 @@ const GameSetup = ({ onGameStart }) => {
   return (
     <SetupContainer>
       <SetupCard>
-        <Title>🎮 Game Setup</Title>
-        
         {error && <ErrorMessage>{error}</ErrorMessage>}
-
         {!gameId ? (
           <>
             <FormGroup>

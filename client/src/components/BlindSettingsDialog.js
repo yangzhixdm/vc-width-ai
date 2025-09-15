@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { X, Settings, DollarSign } from 'lucide-react';
+import { X, Settings } from 'lucide-react';
 
 const Overlay = styled.div`
   position: fixed;

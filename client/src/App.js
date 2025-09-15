@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
 import GameTable from './components/GameTable';
 import GameSetup from './components/GameSetup';
@@ -24,12 +24,6 @@ const Title = styled.h1`
   font-size: 2.5rem;
   margin: 0;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-`;
-
-const Subtitle = styled.p`
-  color: #d4c4a8;
-  font-size: 1.1rem;
-  margin: 10px 0 0 0;
 `;
 
 function App() {
