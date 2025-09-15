@@ -216,13 +216,13 @@ const GameTable = ({ gameId, onGameEnd }) => {
 
   const getPlayerPosition = (index, totalPlayers) => {
     const angle = (360 / totalPlayers) * index;
-    const radius = 250;
+    const radius = 320; // 增加半径以适应更大的桌子
     const x = Math.cos((angle - 90) * Math.PI / 180) * radius;
     const y = Math.sin((angle - 90) * Math.PI / 180) * radius;
     
     return {
-      x: x + 300, // Center offset
-      y: y + 200, // Center offset
+      x: x + 400, // 调整中心偏移量 (800/2 = 400)
+      y: y + 300, // 调整中心偏移量 (600/2 = 300)
       angle: angle
     };
   };
