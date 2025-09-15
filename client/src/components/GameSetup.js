@@ -148,13 +148,115 @@ const RemoveButton = styled.button`
   }
 `;
 
+const EditChipsButton = styled.button`
+  background: #4a9eff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 12px;
+  margin-right: 8px;
+
+  &:hover {
+    background: #357abd;
+  }
+`;
+
+const ChipEditModal = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(5px);
+`;
+
+const ChipEditCard = styled.div`
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 30px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  max-width: 400px;
+  width: 90%;
+`;
+
+const ChipEditHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+`;
+
+const ChipEditTitle = styled.h3`
+  color: #f4e4bc;
+  margin: 0;
+  font-size: 1.3rem;
+`;
+
+const ChipEditInput = styled.input`
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #2d7a5f;
+  border-radius: 8px;
+  font-size: 16px;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  margin-bottom: 20px;
+  transition: all 0.2s ease;
+
+  &:focus {
+    outline: none;
+    border-color: #4a9eff;
+    box-shadow: 0 0 0 3px rgba(74, 158, 255, 0.2);
+  }
+`;
+
+const ChipEditButtons = styled.div`
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+`;
+
+const ChipEditButton = styled.button`
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+
+  &.btn-primary {
+    background: linear-gradient(135deg, #4a9eff 0%, #357abd 100%);
+    color: white;
+  }
+
+  &.btn-secondary {
+    background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+    color: white;
+  }
+
+  &:hover {
+    transform: translateY(-1px);
+  }
+`;
+
 const GameSetup = ({ onGameStart }) => {
-  const { createGame, addPlayer, startGame, loading, error } = useGame();
+  const { createGame, addPlayer, startGame, updatePlayerChips, loading, error } = useGame();
   const [smallBlind, setSmallBlind] = useState(10);
   const [bigBlind, setBigBlind] = useState(20);
   const [playerName, setPlayerName] = useState('');
   const [players, setPlayers] = useState([]);
   const [gameId, setGameId] = useState(null);
+  const [editingChips, setEditingChips] = useState(null);
 
   const handleCreateGame = async () => {
     try {
@@ -185,6 +287,30 @@ const GameSetup = ({ onGameStart }) => {
 
   const handleRemovePlayer = (index) => {
     setPlayers(players.filter((_, i) => i !== index));
+  };
+
+  const handleEditChips = (player) => {
+    setEditingChips({ ...player, newChips: player.chips || 1000 });
+  };
+
+  const handleSaveChips = async () => {
+    if (!editingChips || !gameId) return;
+
+    try {
+      await updatePlayerChips(gameId, editingChips.id, editingChips.newChips);
+      setPlayers(players.map(p => 
+        p.id === editingChips.id 
+          ? { ...p, chips: editingChips.newChips }
+          : p
+      ));
+      setEditingChips(null);
+    } catch (err) {
+      console.error('Failed to update chips:', err);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingChips(null);
   };
 
   const handleStartGame = async () => {
@@ -257,10 +383,20 @@ const GameSetup = ({ onGameStart }) => {
               <Label>Players ({players.length}/8)</Label>
               {players.map((player, index) => (
                 <PlayerItem key={player.id}>
-                  <span>{player.name} {player.isHuman ? '(You)' : ''}</span>
-                  <RemoveButton onClick={() => handleRemovePlayer(index)}>
-                    Remove
-                  </RemoveButton>
+                  <div>
+                    <div>{player.name} {player.isHuman ? '(You)' : ''}</div>
+                    <div style={{ fontSize: '12px', color: '#4a9eff', marginTop: '4px' }}>
+                      Chips: ${player.chips || 1000}
+                    </div>
+                  </div>
+                  <div>
+                    <EditChipsButton onClick={() => handleEditChips(player)}>
+                      Edit Chips
+                    </EditChipsButton>
+                    <RemoveButton onClick={() => handleRemovePlayer(index)}>
+                      Remove
+                    </RemoveButton>
+                  </div>
                 </PlayerItem>
               ))}
             </PlayerList>
@@ -282,6 +418,44 @@ const GameSetup = ({ onGameStart }) => {
           </>
         )}
       </SetupCard>
+
+      {editingChips && (
+        <ChipEditModal onClick={handleCancelEdit}>
+          <ChipEditCard onClick={(e) => e.stopPropagation()}>
+            <ChipEditHeader>
+              <ChipEditTitle>Edit Chips for {editingChips.name}</ChipEditTitle>
+            </ChipEditHeader>
+            
+            <ChipEditInput
+              type="number"
+              value={editingChips.newChips}
+              onChange={(e) => setEditingChips({
+                ...editingChips,
+                newChips: parseInt(e.target.value) || 0
+              })}
+              min="0"
+              placeholder="Enter chip amount"
+            />
+            
+            <ChipEditButtons>
+              <ChipEditButton 
+                className="btn-secondary"
+                onClick={handleCancelEdit}
+                disabled={loading}
+              >
+                Cancel
+              </ChipEditButton>
+              <ChipEditButton 
+                className="btn-primary"
+                onClick={handleSaveChips}
+                disabled={loading || editingChips.newChips < 0}
+              >
+                {loading ? 'Saving...' : 'Save'}
+              </ChipEditButton>
+            </ChipEditButtons>
+          </ChipEditCard>
+        </ChipEditModal>
+      )}
     </SetupContainer>
   );
 };

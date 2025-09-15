@@ -315,6 +315,36 @@ class GameController {
       };
     }
   }
+
+  // Update player chips
+  async updatePlayerChips(ctx) {
+    try {
+      const { gameId, playerId } = ctx.params;
+      const { chips } = ctx.request.body;
+      
+      if (chips === undefined || chips < 0) {
+        ctx.status = 400;
+        ctx.body = {
+          success: false,
+          error: 'Valid chips amount is required'
+        };
+        return;
+      }
+      
+      const player = await GameService.updatePlayerChips(gameId, playerId, chips);
+      
+      ctx.body = {
+        success: true,
+        data: player
+      };
+    } catch (error) {
+      ctx.status = 400;
+      ctx.body = {
+        success: false,
+        error: error.message
+      };
+    }
+  }
 }
 
 module.exports = new GameController();

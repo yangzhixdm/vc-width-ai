@@ -31,4 +31,7 @@ router.post('/:gameId/end-hand', GameController.endHand);
 router.get('/:gameId/next-player', GameController.getNextPlayer);
 router.post('/:gameId/current-player', GameController.setCurrentPlayer);
 
+// Player management routes
+router.put('/:gameId/players/:playerId/chips', GameController.updatePlayerChips);
+
 module.exports = router;

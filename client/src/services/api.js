@@ -138,6 +138,14 @@ export const gameAPI = {
       playerId
     });
     return response.data;
+  },
+
+  // Update player chips
+  updatePlayerChips: async (gameId, playerId, chips) => {
+    const response = await api.put(`/api/games/${gameId}/players/${playerId}/chips`, {
+      chips
+    });
+    return response.data;
   }
 };
 

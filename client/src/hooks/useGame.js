@@ -281,6 +281,26 @@ export const GameProvider = ({ children }) => {
     }
   };
 
+  // Update player chips
+  const updatePlayerChips = async (gameId, playerId, chips) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await gameAPI.updatePlayerChips(gameId, playerId, chips);
+      if (response.success) {
+        await getGameState(gameId);
+        return response.data;
+      } else {
+        throw new Error(response.error);
+      }
+    } catch (err) {
+      setError(err.message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Clear AI recommendation
   const clearAIRecommendation = () => {
     setAiRecommendation(null);
@@ -310,6 +330,7 @@ export const GameProvider = ({ children }) => {
     endHand,
     getNextPlayer,
     setCurrentPlayer,
+    updatePlayerChips,
     clearAIRecommendation,
     clearError
   };

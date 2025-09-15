@@ -133,6 +133,20 @@ class GameService {
     return game;
   }
 
+  // Update player chips
+  async updatePlayerChips(gameId, playerId, chips) {
+    const player = await Player.findOne({
+      where: { id: playerId, gameId }
+    });
+
+    if (!player) {
+      throw new Error('Player not found');
+    }
+
+    await player.update({ chips });
+    return player;
+  }
+
   // Deal hole cards to all players
   async dealHoleCards(gameId) {
     const players = await Player.findAll({ where: { gameId, isActive: true } });
