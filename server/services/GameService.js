@@ -98,12 +98,21 @@ class GameService {
       return null;
     }
 
-    // If no current player set, start with small blind or first player
+    // If no current player set, start with first player after BB
     if (!game.currentPlayerId) {
-      const sbPlayer = activePlayers.find(p => p.role === 'sb');
-      const firstPlayer = sbPlayer || activePlayers[0];
-      await game.update({ currentPlayerId: firstPlayer.id });
-      return firstPlayer;
+      const bbPlayer = activePlayers.find(p => p.role === 'bb');
+      if (bbPlayer) {
+        const bbIndex = activePlayers.findIndex(p => p.id === bbPlayer.id);
+        const nextPlayerIndex = (bbIndex + 1) % activePlayers.length;
+        const firstPlayer = activePlayers[nextPlayerIndex];
+        await game.update({ currentPlayerId: firstPlayer.id });
+        return firstPlayer;
+      } else {
+        // Fallback to first player if no BB found
+        const firstPlayer = activePlayers[0];
+        await game.update({ currentPlayerId: firstPlayer.id });
+        return firstPlayer;
+      }
     }
 
     // Find current player index
@@ -175,6 +184,19 @@ class GameService {
 
     if (bbPlayer) {
       await this.makeAction(gameId, bbPlayer.id, 'call', 20, 'preflop');
+    }
+
+    // 设置第一个行动的玩家（BB之后的那一位）
+    const game = await Game.findByPk(gameId);
+    if (bbPlayer) {
+      // 找到BB玩家的位置，下一个玩家就是第一个行动的
+      const bbIndex = players.findIndex(p => p.id === bbPlayer.id);
+      const nextPlayerIndex = (bbIndex + 1) % players.length;
+      const firstToAct = players[nextPlayerIndex];
+      
+      if (firstToAct) {
+        await game.update({ currentPlayerId: firstToAct.id });
+      }
     }
   }
 
