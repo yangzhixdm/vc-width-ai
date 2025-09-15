@@ -1,5 +1,5 @@
 const { Sequelize } = require('sequelize');
-const config = require('../config.example');
+const config = require('../config');
 
 // 创建数据库连接（不指定数据库名）
 const sequelize = new Sequelize('', config.database.username, config.database.password, {

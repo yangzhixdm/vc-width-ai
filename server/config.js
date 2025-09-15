@@ -4,7 +4,7 @@ module.exports = {
     port: 3306,
     database: 'texas_holdem_ai',
     username: 'root',
-    password: 'your_password',
+    password: 'rootpassword',
     dialect: 'mysql'
   },
   openai: {

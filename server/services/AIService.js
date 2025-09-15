@@ -1,6 +1,6 @@
 const OpenAI = require('openai');
 const { Action, Player, BehaviorProfile } = require('../models');
-const config = require('../config.example');
+const config = require('../config');
 
 class AIService {
   constructor() {
