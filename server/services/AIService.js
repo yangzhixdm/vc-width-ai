@@ -15,14 +15,26 @@ class AIService {
       // Get player's behavior profile
       const behaviorProfile = await this.getPlayerBehaviorProfile(playerId);
       
+      // Get all players' behavior profiles and stats
+      const allPlayersProfiles = await this.getAllPlayersProfiles(gameId);
+      
       // Get recent actions from current game
       const recentActions = await this.getRecentActions(gameId, currentRound);
+      
+      // Get historical hand data for all players
+      const historicalHands = await this.getHistoricalHands(gameId);
       
       // Get current game context
       const gameContext = await this.getGameContext(gameId, playerId);
       
       // Prepare prompt for LLM
-      const prompt = this.buildAnalysisPrompt(behaviorProfile, recentActions, gameContext);
+      const prompt = this.buildEnhancedAnalysisPrompt(
+        behaviorProfile, 
+        allPlayersProfiles, 
+        recentActions, 
+        historicalHands, 
+        gameContext
+      );
       
       // Get recommendation from OpenAI
       const response = await this.openai.chat.completions.create({
@@ -30,7 +42,7 @@ class AIService {
         messages: [
           {
             role: 'system',
-            content: 'You are an expert Texas Hold\'em poker AI assistant. Analyze the game situation and provide betting recommendations based on player behavior patterns, position, and game context. Respond with a JSON object containing your recommendation.'
+            content: 'You are an expert Texas Hold\'em poker AI assistant. Analyze the game situation and provide betting recommendations based on player behavior patterns, historical data, position, and game context. Consider all players\' tendencies and past actions. Respond with a JSON object containing your recommendation.'
           },
           {
             role: 'user',
@@ -38,7 +50,7 @@ class AIService {
           }
         ],
         temperature: 0.7,
-        max_tokens: 500
+        max_tokens: 800
       });
 
       const recommendation = JSON.parse(response.choices[0].message.content);
@@ -76,6 +88,111 @@ class AIService {
       showdownFrequency: profile.showdownFrequency,
       winRate: profile.winRate,
       totalHands: profile.totalHands
+    };
+  }
+
+  // Get all players' behavior profiles and stats
+  async getAllPlayersProfiles(gameId) {
+    const { Game, Player } = require('../models');
+    
+    const players = await Player.findAll({ 
+      where: { gameId },
+      include: [{ model: BehaviorProfile, as: 'behaviorProfile' }]
+    });
+
+    const profiles = [];
+    for (const player of players) {
+      const profile = player.behaviorProfile || this.getDefaultBehaviorProfile();
+      const playerStats = await this.calculatePlayerStats(player.id);
+      
+      profiles.push({
+        playerId: player.id,
+        playerName: player.name,
+        position: player.position,
+        role: player.role,
+        chips: player.chips,
+        isHuman: player.isHuman,
+        isActive: player.isActive,
+        isFolded: player.isFolded,
+        behaviorProfile: profile,
+        currentStats: playerStats
+      });
+    }
+
+    return profiles;
+  }
+
+  // Get historical hand data for all players
+  async getHistoricalHands(gameId) {
+    const actions = await Action.findAll({
+      where: { gameId },
+      include: [{ model: Player, as: 'player' }],
+      order: [['createdAt', 'ASC']]
+    });
+
+    // Group actions by hand/round
+    const hands = {};
+    actions.forEach(action => {
+      const handKey = `${action.round}_${action.gameId}`;
+      if (!hands[handKey]) {
+        hands[handKey] = {
+          round: action.round,
+          communityCards: action.communityCards,
+          actions: []
+        };
+      }
+      hands[handKey].actions.push({
+        playerName: action.player.name,
+        playerId: action.playerId,
+        position: action.position,
+        actionType: action.actionType,
+        amount: action.amount,
+        potSize: action.potSize,
+        holeCards: action.holeCards,
+        isAIRecommended: action.isAIRecommended
+      });
+    });
+
+    return Object.values(hands);
+  }
+
+  // Calculate current player statistics
+  async calculatePlayerStats(playerId) {
+    const actions = await Action.findAll({
+      where: { playerId },
+      order: [['createdAt', 'DESC']],
+      limit: 100 // Last 100 actions
+    });
+
+    if (actions.length === 0) {
+      return this.getDefaultPlayerStats();
+    }
+
+    const totalHands = new Set(actions.map(a => `${a.gameId}_${a.round}`)).size;
+    const vpipHands = new Set(
+      actions.filter(a => a.actionType !== 'fold').map(a => `${a.gameId}_${a.round}`)
+    ).size;
+    const pfrHands = new Set(
+      actions.filter(a => a.actionType === 'raise').map(a => `${a.gameId}_${a.round}`)
+    ).size;
+    const showdownHands = new Set(
+      actions.filter(a => a.round === 'river' && a.actionType !== 'fold').map(a => `${a.gameId}_${a.round}`)
+    ).size;
+
+    const aggressiveActions = actions.filter(a => ['raise', 'call'].includes(a.actionType)).length;
+    const passiveActions = actions.filter(a => ['check', 'fold'].includes(a.actionType)).length;
+    const totalActions = actions.length;
+
+    return {
+      vpip: totalHands > 0 ? (vpipHands / totalHands) * 100 : 0,
+      pfr: totalHands > 0 ? (pfrHands / totalHands) * 100 : 0,
+      showdownRate: totalHands > 0 ? (showdownHands / totalHands) * 100 : 0,
+      aggressionFactor: passiveActions > 0 ? aggressiveActions / passiveActions : 0,
+      foldRate: totalActions > 0 ? (actions.filter(a => a.actionType === 'fold').length / totalActions) * 100 : 0,
+      raiseRate: totalActions > 0 ? (actions.filter(a => a.actionType === 'raise').length / totalActions) * 100 : 0,
+      callRate: totalActions > 0 ? (actions.filter(a => a.actionType === 'call').length / totalActions) * 100 : 0,
+      totalHands: totalHands,
+      totalActions: totalActions
     };
   }
 
@@ -120,8 +237,11 @@ class AIService {
     };
   }
 
-  // Build analysis prompt for LLM
-  buildAnalysisPrompt(behaviorProfile, recentActions, gameContext) {
+  // Build enhanced analysis prompt for LLM
+  buildEnhancedAnalysisPrompt(behaviorProfile, allPlayersProfiles, recentActions, historicalHands, gameContext) {
+    const currentPlayer = allPlayersProfiles.find(p => p.playerId === gameContext.playerId);
+    const otherPlayers = allPlayersProfiles.filter(p => p.playerId !== gameContext.playerId);
+
     return `
 Analyze this Texas Hold'em situation and provide a betting recommendation:
 
@@ -137,26 +257,51 @@ GAME CONTEXT:
 - Active Players: ${gameContext.activePlayers}
 - Pot Odds: ${gameContext.potOdds}%
 
-PLAYER BEHAVIOR PROFILE:
-- VPIP: ${behaviorProfile.vpip}%
-- PFR: ${behaviorProfile.pfr}%
-- Aggression Factor: ${behaviorProfile.aggressionFactor}
-- Fold to C-bet: ${behaviorProfile.foldToCbet}%
-- C-bet Frequency: ${behaviorProfile.cbetFrequency}%
-- 3-bet Frequency: ${behaviorProfile.threeBetFrequency}%
-- Total Hands: ${behaviorProfile.totalHands}
+CURRENT PLAYER PROFILE:
+- VPIP: ${currentPlayer?.currentStats.vpip.toFixed(1)}% (入池率)
+- PFR: ${currentPlayer?.currentStats.pfr.toFixed(1)}% (翻牌前加注率)
+- Showdown Rate: ${currentPlayer?.currentStats.showdownRate.toFixed(1)}% (摊牌率)
+- Aggression Factor: ${currentPlayer?.currentStats.aggressionFactor.toFixed(2)}
+- Fold Rate: ${currentPlayer?.currentStats.foldRate.toFixed(1)}%
+- Raise Rate: ${currentPlayer?.currentStats.raiseRate.toFixed(1)}%
+- Call Rate: ${currentPlayer?.currentStats.callRate.toFixed(1)}%
+- Total Hands: ${currentPlayer?.currentStats.totalHands}
+
+OTHER PLAYERS PROFILES:
+${otherPlayers.map(player => `
+- ${player.playerName} (${player.role}, pos ${player.position}):
+  * VPIP: ${player.currentStats.vpip.toFixed(1)}% | PFR: ${player.currentStats.pfr.toFixed(1)}%
+  * Showdown: ${player.currentStats.showdownRate.toFixed(1)}% | Aggression: ${player.currentStats.aggressionFactor.toFixed(2)}
+  * Fold: ${player.currentStats.foldRate.toFixed(1)}% | Raise: ${player.currentStats.raiseRate.toFixed(1)}%
+  * Chips: $${player.chips} | Active: ${player.isActive} | Folded: ${player.isFolded}
+`).join('')}
 
 RECENT ACTIONS THIS ROUND:
 ${recentActions.map(action => 
   `- ${action.playerName} (pos ${action.position}): ${action.actionType} ${action.amount > 0 ? `$${action.amount}` : ''}`
 ).join('\n')}
 
+HISTORICAL HAND PATTERNS (Last ${historicalHands.length} hands):
+${historicalHands.slice(-3).map(hand => `
+Round: ${hand.round}
+Community Cards: ${JSON.stringify(hand.communityCards)}
+Actions: ${hand.actions.map(a => `${a.playerName}: ${a.actionType}${a.amount > 0 ? ` $${a.amount}` : ''}`).join(', ')}
+`).join('')}
+
+ANALYSIS INSTRUCTIONS:
+1. Consider each player's playing style and tendencies
+2. Analyze position and stack sizes
+3. Consider pot odds and implied odds
+4. Factor in recent actions and betting patterns
+5. Account for player types (tight/loose, aggressive/passive)
+
 Provide your recommendation as a JSON object with:
 {
   "action": "check|call|raise|fold",
   "amount": number (if raise),
   "confidence": 0-100,
-  "reasoning": "brief explanation"
+  "reasoning": "detailed explanation considering all player profiles and game context",
+  "playerAnalysis": "brief analysis of key opponents' likely actions"
 }
 `;
   }
@@ -182,6 +327,21 @@ Provide your recommendation as a JSON object with:
       showdownFrequency: 30,
       winRate: 0,
       totalHands: 0
+    };
+  }
+
+  // Get default player stats for new players
+  getDefaultPlayerStats() {
+    return {
+      vpip: 20,
+      pfr: 15,
+      showdownRate: 30,
+      aggressionFactor: 2.0,
+      foldRate: 40,
+      raiseRate: 15,
+      callRate: 25,
+      totalHands: 0,
+      totalActions: 0
     };
   }
 
