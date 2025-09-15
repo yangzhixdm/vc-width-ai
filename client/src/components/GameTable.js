@@ -419,9 +419,9 @@ const GameTable = ({ gameId, onGameEnd }) => {
         </PlayerPositions>
 
         <CenterArea>
-          <CommunityCards cards={game.communityCards} />
-          <PotDisplay>${game.currentPot}</PotDisplay>
-          <RoundDisplay>{game.currentRound}</RoundDisplay>
+          <CommunityCards cards={game?.communityCards || []} />
+          <PotDisplay>${game?.currentPot || 0}</PotDisplay>
+          <RoundDisplay>{game?.currentRound || 'preflop'}</RoundDisplay>
         </CenterArea>
       </Table>
 
@@ -484,7 +484,7 @@ const GameTable = ({ gameId, onGameEnd }) => {
           <ControlButton 
             className="btn-secondary"
             onClick={() => setShowSettleDialog(true)}
-            disabled={loading || game.currentPot === 0}
+            disabled={loading || (game?.currentPot || 0) === 0}
           >
             Settle Chips
           </ControlButton>

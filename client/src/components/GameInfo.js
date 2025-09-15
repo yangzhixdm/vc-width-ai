@@ -85,11 +85,11 @@ const RoundValue = styled.div`
   letter-spacing: 1px;
 `;
 
-const GameInfo = ({ game, players }) => {
+const GameInfo = ({ game, players = [] }) => {
   const activePlayers = players.filter(p => p.isActive && !p.isFolded).length;
   const totalChips = players.reduce((sum, player) => sum + player.chips, 0);
-  const currentBet = game.currentBet;
-  const pot = game.currentPot;
+  const currentBet = game?.currentBet || 0;
+  const pot = game?.currentPot || 0;
 
   const getRoundDisplay = (round) => {
     switch (round) {
@@ -138,7 +138,7 @@ const GameInfo = ({ game, players }) => {
         <RoundIcon>
           <Clock size={20} color="white" />
         </RoundIcon>
-        <RoundValue>{getRoundDisplay(game.currentRound)}</RoundValue>
+        <RoundValue>{getRoundDisplay(game?.currentRound || 'preflop')}</RoundValue>
       </RoundInfo>
     </InfoContainer>
   );
