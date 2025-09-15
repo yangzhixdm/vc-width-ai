@@ -155,8 +155,17 @@ const GameTable = ({ gameId, onGameEnd }) => {
       setSelectedPlayerForRaise(player);
       setShowRaiseDialog(true);
     } else {
+      // 计算跟注金额
+      let actionAmount = 0;
+      if (actionType === 'call') {
+        const game = gameState?.game;
+        if (game) {
+          actionAmount = Math.max(0, game.currentBet - player.currentBet);
+        }
+      }
+      
       // 直接执行其他操作
-      handlePlayerActionDirect(player, actionType);
+      handlePlayerActionDirect(player, actionType, actionAmount);
     }
   };
 

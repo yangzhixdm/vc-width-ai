@@ -195,10 +195,13 @@ class GameService {
       });
     }
 
-    // 更新奖池
+    // 更新奖池和当前下注
     const game = await Game.findByPk(gameId);
     const totalBlinds = (sbPlayer ? 10 : 0) + (bbPlayer ? 20 : 0);
-    await game.update({ currentPot: totalBlinds });
+    await game.update({ 
+      currentPot: totalBlinds,
+      currentBet: 20  // 设置当前下注为大盲注金额
+    });
 
     // 设置第一个行动的玩家（BB之后的那一位）
     if (bbPlayer) {
@@ -253,9 +256,18 @@ class GameService {
     // Mark player as having acted this round
     await player.update({ hasActedThisRound: true });
 
-    // Update pot
+    // Update pot and current bet
+    const newPot = game.currentPot + amount;
+    let newCurrentBet = game.currentBet;
+    
+    // 如果是加注或全下，更新当前下注金额
+    if (actionType === 'raise' || actionType === 'allin') {
+      newCurrentBet = Math.max(game.currentBet, updatedPlayer.currentBet);
+    }
+    
     await game.update({
-      currentPot: game.currentPot + amount
+      currentPot: newPot,
+      currentBet: newCurrentBet
     });
 
     // Record action
@@ -875,20 +887,21 @@ class GameService {
         winner: game.winner,
         currentPlayerId: game.currentPlayerId
       },
-      players: game.players.map(player => ({
-        id: player.id,
-        name: player.name,
-        avatar: player.avatar,
-        position: player.position,
-        role: player.role,
-        chips: player.chips,
-        currentBet: player.currentBet,
-        holeCards: player.holeCards,
-        isActive: player.isActive,
-        isHuman: player.isHuman,
-        isFolded: player.isFolded,
-        isAllIn: player.isAllIn
-      })),
+      players: game.players
+        .map(player => ({
+          id: player.id,
+          name: player.name,
+          avatar: player.avatar,
+          position: player.position,
+          role: player.role,
+          chips: player.chips,
+          currentBet: player.currentBet,
+          holeCards: player.holeCards,
+          isActive: player.isActive,
+          isHuman: player.isHuman,
+          isFolded: player.isFolded,
+          isAllIn: player.isAllIn
+        })),
       actions: game.actions.map(action => ({
         id: action.id,
         playerId: action.playerId,
