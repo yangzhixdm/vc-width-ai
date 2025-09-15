@@ -20,7 +20,7 @@ async function createDatabase() {
     
     // 重新连接并同步表结构
     const { syncDatabase } = require('../models');
-    await syncDatabase();
+    await syncDatabase(true); // 首次初始化时强制同步
     
     console.log('🎉 Database initialization completed successfully!');
     process.exit(0);

@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import { User, Chip } from 'lucide-react';
+import { User, Coins } from 'lucide-react';
 
 const SeatContainer = styled.div`
   position: absolute;
@@ -191,7 +191,7 @@ const PlayerSeat = ({
           {player.isHuman && ' (You)'}
         </PlayerName>
         <PlayerChips>
-          <Chip size={12} />
+          <Coins size={12} />
           ${player.chips}
         </PlayerChips>
         <PlayerRole>{player.role}</PlayerRole>

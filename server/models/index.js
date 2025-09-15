@@ -18,10 +18,17 @@ Player.hasOne(BehaviorProfile, { foreignKey: 'playerId', as: 'behaviorProfile' }
 BehaviorProfile.belongsTo(Player, { foreignKey: 'playerId', as: 'player' });
 
 // Sync database
-const syncDatabase = async () => {
+const syncDatabase = async (force = false) => {
   try {
-    await sequelize.sync({ alter: true });
-    console.log('Database synchronized successfully');
+    if (force) {
+      // 强制重新创建所有表（开发环境）
+      await sequelize.sync({ force: true });
+      console.log('Database force synchronized successfully');
+    } else {
+      // 仅创建不存在的表，不修改现有表结构
+      await sequelize.sync();
+      console.log('Database synchronized successfully');
+    }
   } catch (error) {
     console.error('Error synchronizing database:', error);
   }

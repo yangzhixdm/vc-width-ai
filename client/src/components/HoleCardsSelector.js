@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import CardSelector from './CardSelector';
-import { Cards, User } from 'lucide-react';
+import { CreditCard, User } from 'lucide-react';
 
 const Overlay = styled.div`
   position: fixed;
@@ -271,7 +271,7 @@ const HoleCardsSelector = ({
             onClick={() => setShowCardSelector(true)}
             disabled={holeCards.length >= 2}
           >
-            <Cards size={20} />
+            <CreditCard size={20} />
             选择手牌
           </ActionButton>
           

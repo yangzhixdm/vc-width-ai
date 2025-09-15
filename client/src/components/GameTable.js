@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import { useGame } from '../hooks/useGame';
 import PlayerSeat from './PlayerSeat';
@@ -112,7 +112,6 @@ const GameTable = ({ gameId, onGameEnd }) => {
     gameState, 
     getGameState, 
     makeAction, 
-    dealCommunityCards,
     getAIRecommendation,
     setHoleCards,
     setCommunityCards,
@@ -125,17 +124,21 @@ const GameTable = ({ gameId, onGameEnd }) => {
   const [showAIRecommendation, setShowAIRecommendation] = useState(false);
   const [showHoleCardsSelector, setShowHoleCardsSelector] = useState(false);
   const [showCommunityCardsSelector, setShowCommunityCardsSelector] = useState(false);
+  
+  // 使用 ref 来存储最新的 getGameState 函数引用
+  const getGameStateRef = useRef(getGameState);
+  getGameStateRef.current = getGameState;
 
   // Load game state on mount and periodically
   useEffect(() => {
     if (gameId) {
-      getGameState(gameId);
+      getGameStateRef.current(gameId);
       const interval = setInterval(() => {
-        getGameState(gameId);
+        getGameStateRef.current(gameId);
       }, 2000);
       return () => clearInterval(interval);
     }
-  }, [gameId, getGameState]);
+  }, [gameId]); // 只依赖 gameId，避免无限循环
 
   // Find human player
   useEffect(() => {
