@@ -91,162 +91,55 @@ const ErrorMessage = styled.div`
   text-align: center;
 `;
 
-const PlayerList = styled.div`
-  margin-top: 20px;
-`;
-
-const PlayerItem = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
-  margin-bottom: 8px;
-`;
-
-const RemoveButton = styled.button`
-  background: #f44336;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  padding: 6px 12px;
-  cursor: pointer;
-  font-size: 12px;
-
-  &:hover {
-    background: #d32f2f;
-  }
-`;
 
 
 const GameSetup = ({ onGameStart }) => {
-  const { createGame, addPlayer, loading, error } = useGame();
+  const { createGame, loading, error } = useGame();
   const [smallBlind, setSmallBlind] = useState(10);
   const [bigBlind, setBigBlind] = useState(20);
-  const [playerName, setPlayerName] = useState('');
-  const [players, setPlayers] = useState([]);
-  const [gameId, setGameId] = useState(null);
 
   const handleCreateGame = async () => {
     try {
       const game = await createGame(smallBlind, bigBlind);
-      setGameId(game.id);
+      onGameStart(game.id);
     } catch (err) {
       console.error('Failed to create game:', err);
     }
   };
 
-  const handleAddPlayer = async () => {
-    if (!playerName.trim() || !gameId) return;
-
-    try {
-      const playerData = {
-        name: playerName.trim(),
-        isHuman: players.length === 0, // First player is human
-        avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${playerName}`
-      };
-
-      await addPlayer(gameId, playerData);
-      setPlayers([...players, { ...playerData, id: Date.now() }]);
-      setPlayerName('');
-    } catch (err) {
-      console.error('Failed to add player:', err);
-    }
-  };
-
-  const handleRemovePlayer = (index) => {
-    setPlayers(players.filter((_, i) => i !== index));
-  };
-
-
-  const handleEnterGame = () => {
-    if (!gameId || players.length < 2) return;
-    onGameStart(gameId);
-  };
-
   return (
     <SetupContainer>
       <SetupCard>
+        <h2 style={{ color: '#f4e4bc', textAlign: 'center', marginBottom: '30px', fontSize: '1.8rem' }}>
+          🎮 Create New Game
+        </h2>
+        
         {error && <ErrorMessage>{error}</ErrorMessage>}
-        {!gameId ? (
-          <>
-            <FormGroup>
-              <Label>Small Blind</Label>
-              <Input
-                type="number"
-                value={smallBlind}
-                onChange={(e) => setSmallBlind(parseInt(e.target.value) || 10)}
-                min="1"
-              />
-            </FormGroup>
 
-            <FormGroup>
-              <Label>Big Blind</Label>
-              <Input
-                type="number"
-                value={bigBlind}
-                onChange={(e) => setBigBlind(parseInt(e.target.value) || 20)}
-                min="1"
-              />
-            </FormGroup>
+        <FormGroup>
+          <Label>Small Blind</Label>
+          <Input
+            type="number"
+            value={smallBlind}
+            onChange={(e) => setSmallBlind(parseInt(e.target.value) || 10)}
+            min="1"
+          />
+        </FormGroup>
 
-            <Button onClick={handleCreateGame} disabled={loading}>
-              {loading ? 'Creating...' : 'Create Game'}
-            </Button>
-          </>
-        ) : (
-          <>
-            <FormGroup>
-              <Label>Add Player</Label>
-              <div style={{ display: 'flex', gap: '10px' }}>
-                <Input
-                  type="text"
-                  placeholder="Player name"
-                  value={playerName}
-                  onChange={(e) => setPlayerName(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleAddPlayer()}
-                />
-                <Button 
-                  onClick={handleAddPlayer} 
-                  disabled={!playerName.trim() || loading}
-                  style={{ width: 'auto', padding: '12px 20px' }}
-                >
-                  Add
-                </Button>
-              </div>
-            </FormGroup>
+        <FormGroup>
+          <Label>Big Blind</Label>
+          <Input
+            type="number"
+            value={bigBlind}
+            onChange={(e) => setBigBlind(parseInt(e.target.value) || 20)}
+            min="1"
+          />
+        </FormGroup>
 
-            <PlayerList>
-              <Label>Players ({players.length}/8)</Label>
-              {players.map((player, index) => (
-                <PlayerItem key={player.id}>
-                  <span>{player.name} {player.isHuman ? '(You)' : ''}</span>
-                  <RemoveButton onClick={() => handleRemovePlayer(index)}>
-                    Remove
-                  </RemoveButton>
-                </PlayerItem>
-              ))}
-            </PlayerList>
-
-            <Button 
-              onClick={handleEnterGame} 
-              disabled={players.length < 2 || loading}
-              style={{ 
-                background: players.length >= 2 
-                  ? 'linear-gradient(135deg, #4a9eff 0%, #357abd 100%)' 
-                  : 'linear-gradient(135deg, #6c757d 0%, #5a6268 100%)',
-                boxShadow: players.length >= 2 
-                  ? '0 4px 15px rgba(74, 158, 255, 0.3)' 
-                  : '0 4px 15px rgba(108, 117, 125, 0.3)'
-              }}
-            >
-              {loading ? 'Loading...' : `Enter Game Table (${players.length} players)`}
-            </Button>
-          </>
-        )}
+        <Button onClick={handleCreateGame} disabled={loading}>
+          {loading ? 'Creating...' : 'Create Game & Enter Table'}
+        </Button>
       </SetupCard>
-
     </SetupContainer>
   );
 };

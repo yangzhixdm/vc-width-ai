@@ -218,7 +218,7 @@ const GameTable = ({ gameId, onGameEnd }) => {
         currentPlayer.id, 
         actionType, 
         amount, 
-        gameState.game.currentRound
+        gameState?.game?.currentRound
       );
       
       setShowBettingInterface(false);
@@ -237,7 +237,7 @@ const GameTable = ({ gameId, onGameEnd }) => {
     if (!currentPlayer || !gameState) return;
 
     try {
-      await getAIRecommendation(gameId, currentPlayer.id, gameState.game.currentRound);
+      await getAIRecommendation(gameId, currentPlayer.id, gameState?.game?.currentRound);
       setShowAIRecommendation(true);
     } catch (err) {
       console.error('Failed to get AI recommendation:', err);
@@ -248,7 +248,7 @@ const GameTable = ({ gameId, onGameEnd }) => {
     if (!gameState) return;
 
     const rounds = ['preflop', 'flop', 'turn', 'river'];
-    const currentIndex = rounds.indexOf(gameState.game.currentRound);
+    const currentIndex = rounds.indexOf(gameState?.game?.currentRound);
     const nextRound = rounds[currentIndex + 1];
 
     if (nextRound) {
@@ -271,7 +271,7 @@ const GameTable = ({ gameId, onGameEnd }) => {
     if (!gameState) return;
 
     const rounds = ['preflop', 'flop', 'turn', 'river'];
-    const currentIndex = rounds.indexOf(gameState.game.currentRound);
+    const currentIndex = rounds.indexOf(gameState?.game?.currentRound);
     const nextRound = rounds[currentIndex + 1];
 
     if (nextRound) {
@@ -343,14 +343,16 @@ const GameTable = ({ gameId, onGameEnd }) => {
     const usedCards = [];
     
     // 收集所有玩家的手牌
-    gameState.players.forEach(player => {
-      if (player.holeCards) {
-        usedCards.push(...player.holeCards);
-      }
-    });
+    if (gameState.players) {
+      gameState.players.forEach(player => {
+        if (player.holeCards) {
+          usedCards.push(...player.holeCards);
+        }
+      });
+    }
     
     // 收集公共牌
-    if (gameState.game.communityCards) {
+    if (gameState.game && gameState.game.communityCards) {
       usedCards.push(...gameState.game.communityCards);
     }
     
@@ -374,7 +376,7 @@ const GameTable = ({ gameId, onGameEnd }) => {
     return <div>Loading game...</div>;
   }
 
-  const { game, players } = gameState;
+  const { game, players = [] } = gameState;
 
   return (
     <TableContainer>
@@ -408,7 +410,7 @@ const GameTable = ({ gameId, onGameEnd }) => {
                 key={player.id}
                 player={player}
                 position={position}
-                isCurrentPlayer={player.id === gameState.game.currentPlayerId}
+                isCurrentPlayer={player.id === gameState?.game?.currentPlayerId}
                 onAction={handlePlayerAction}
                 onGetAIRecommendation={handleGetAIRecommendation}
               />
@@ -536,8 +538,8 @@ const GameTable = ({ gameId, onGameEnd }) => {
 
       {showCommunityCardsSelector && gameState && (
         <CommunityCardsSelector
-          round={gameState.game.currentRound}
-          existingCards={gameState.game.communityCards || []}
+          round={gameState?.game?.currentRound}
+          existingCards={gameState?.game?.communityCards || []}
           onConfirm={handleCommunityCardsConfirm}
           onCancel={() => setShowCommunityCardsSelector(false)}
           usedCards={getAllUsedCards()}
@@ -546,8 +548,8 @@ const GameTable = ({ gameId, onGameEnd }) => {
 
       {showSettleDialog && gameState && (
         <SettleChipsDialog
-          players={gameState.players.filter(p => p.isActive && p.chips > 0)}
-          potAmount={gameState.game.currentPot}
+          players={(gameState?.players || []).filter(p => p.isActive && p.chips > 0)}
+          potAmount={gameState?.game?.currentPot || 0}
           onSettle={handleSettleChips}
           onCancel={() => setShowSettleDialog(false)}
           loading={loading}
@@ -566,8 +568,8 @@ const GameTable = ({ gameId, onGameEnd }) => {
 
       {showBlindSettingsDialog && gameState && (
         <BlindSettingsDialog
-          currentSmallBlind={gameState.game.smallBlind}
-          currentBigBlind={gameState.game.bigBlind}
+          currentSmallBlind={gameState?.game?.smallBlind || 10}
+          currentBigBlind={gameState?.game?.bigBlind || 20}
           onSave={handleSaveBlindSettings}
           onCancel={() => setShowBlindSettingsDialog(false)}
           loading={loading}
