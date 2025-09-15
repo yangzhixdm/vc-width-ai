@@ -23,4 +23,8 @@ router.get('/:gameId/pot-suggestions', GameController.getPotSizeSuggestions);
 router.post('/:gameId/players/:playerId/hole-cards', GameController.setHoleCards);
 router.post('/:gameId/community-cards', GameController.setCommunityCards);
 
+// Game settlement routes
+router.post('/:gameId/settle', GameController.settleChips);
+router.post('/:gameId/end-hand', GameController.endHand);
+
 module.exports = router;

@@ -304,6 +304,126 @@ class GameService {
     return usedCards;
   }
 
+  // Settle chips and determine winner
+  async settleChips(gameId, winnerId) {
+    const game = await Game.findByPk(gameId, {
+      include: [{ model: Player, as: 'players' }]
+    });
+
+    if (!game) {
+      throw new Error('Game not found');
+    }
+
+    if (game.status !== 'active') {
+      throw new Error('Game is not active');
+    }
+
+    const winner = game.players.find(p => p.id === winnerId);
+    if (!winner) {
+      throw new Error('Winner not found');
+    }
+
+    // Award pot to winner
+    const potAmount = game.currentPot;
+    await winner.update({
+      chips: winner.chips + potAmount
+    });
+
+    // Reset all players' current bets
+    await Promise.all(game.players.map(player => 
+      player.update({ currentBet: 0 })
+    ));
+
+    // Update game state
+    await game.update({
+      status: 'completed',
+      winner: winnerId,
+      currentPot: 0,
+      currentBet: 0,
+      currentRound: 'showdown'
+    });
+
+    return {
+      winner: {
+        id: winner.id,
+        name: winner.name,
+        chipsWon: potAmount,
+        newChipCount: winner.chips + potAmount
+      },
+      potAmount,
+      gameStatus: 'completed'
+    };
+  }
+
+  // End current hand and prepare for next hand
+  async endHand(gameId) {
+    const game = await Game.findByPk(gameId, {
+      include: [{ model: Player, as: 'players' }]
+    });
+
+    if (!game) {
+      throw new Error('Game not found');
+    }
+
+    // Check if game should continue (at least 2 players with chips)
+    const activePlayers = game.players.filter(p => p.chips > 0);
+    
+    if (activePlayers.length < 2) {
+      // Game ends - not enough players
+      await game.update({
+        status: 'completed',
+        currentPot: 0,
+        currentBet: 0,
+        currentRound: 'showdown'
+      });
+      
+      return {
+        game,
+        gameEnded: true,
+        reason: 'Not enough players with chips'
+      };
+    }
+
+    // Reset game state for next hand
+    await game.update({
+      status: 'active', // Keep game active for next hand
+      currentPot: 0,
+      currentBet: 0,
+      currentRound: 'preflop',
+      communityCards: [],
+      winner: null
+    });
+
+    // Reset all players for next hand
+    await Promise.all(game.players.map(player => 
+      player.update({
+        currentBet: 0,
+        holeCards: [],
+        isFolded: false,
+        isAllIn: false,
+        isActive: player.chips > 0 // Only keep active if they have chips
+      })
+    ));
+
+    // Move dealer button and setup positions for next hand
+    const playersWithChips = game.players.filter(p => p.chips > 0);
+    if (playersWithChips.length > 1) {
+      await this.setupPositions(gameId, playersWithChips);
+      
+      // Post blinds for next hand
+      await this.postBlinds(gameId);
+      
+      // Deal new hole cards
+      await this.dealHoleCards(gameId);
+    }
+
+    return {
+      game,
+      gameEnded: false,
+      activePlayers: playersWithChips.length
+    };
+  }
+
   // Get game state for client
   async getGameState(gameId) {
     const game = await Game.findByPk(gameId, {
@@ -331,7 +451,8 @@ class GameService {
         currentBet: game.currentBet,
         currentRound: game.currentRound,
         dealerPosition: game.dealerPosition,
-        communityCards: game.communityCards
+        communityCards: game.communityCards,
+        winner: game.winner
       },
       players: game.players.map(player => ({
         id: player.id,

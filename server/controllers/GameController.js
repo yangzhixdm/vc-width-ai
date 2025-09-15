@@ -215,6 +215,56 @@ class GameController {
       };
     }
   }
+
+  // Settle chips and determine winner
+  async settleChips(ctx) {
+    try {
+      const { gameId } = ctx.params;
+      const { winnerId } = ctx.request.body;
+      
+      if (!winnerId) {
+        ctx.status = 400;
+        ctx.body = {
+          success: false,
+          error: 'Winner ID is required'
+        };
+        return;
+      }
+      
+      const result = await GameService.settleChips(gameId, winnerId);
+      
+      ctx.body = {
+        success: true,
+        data: result
+      };
+    } catch (error) {
+      ctx.status = 400;
+      ctx.body = {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+
+  // End current hand and prepare for next hand
+  async endHand(ctx) {
+    try {
+      const { gameId } = ctx.params;
+      
+      const game = await GameService.endHand(gameId);
+      
+      ctx.body = {
+        success: true,
+        data: game
+      };
+    } catch (error) {
+      ctx.status = 400;
+      ctx.body = {
+        success: false,
+        error: error.message
+      };
+    }
+  }
 }
 
 module.exports = new GameController();
