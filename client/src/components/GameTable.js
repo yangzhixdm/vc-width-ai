@@ -10,6 +10,7 @@ import CommunityCardsSelector from './CommunityCardsSelector';
 import SettleChipsDialog from './SettleChipsDialog';
 import AddPlayerDialog from './AddPlayerDialog';
 import BlindSettingsDialog from './BlindSettingsDialog';
+import RaiseAmountDialog from './RaiseAmountDialog';
 import './GameTable.css';
 
 const GameTable = ({ gameId, onGameEnd }) => {
@@ -43,6 +44,10 @@ const GameTable = ({ gameId, onGameEnd }) => {
   
   // 新增：设置玩家手牌的状态管理
   const [selectedPlayerForHoleCards, setSelectedPlayerForHoleCards] = useState(null);
+  
+  // 新增：加注弹层的状态管理
+  const [showRaiseDialog, setShowRaiseDialog] = useState(false);
+  const [selectedPlayerForRaise, setSelectedPlayerForRaise] = useState(null);
   
   // 使用 ref 来存储最新的 getGameState 函数引用
   const getGameStateRef = useRef(getGameState);
@@ -138,7 +143,46 @@ const GameTable = ({ gameId, onGameEnd }) => {
     }
   };
 
-  const handlePlayerAction = async (actionType, amount = 0) => {
+  // 新增：处理玩家操作
+  const handlePlayerAction = (player, actionType) => {
+    if (actionType === 'raise') {
+      setSelectedPlayerForRaise(player);
+      setShowRaiseDialog(true);
+    } else {
+      // 直接执行其他操作
+      handlePlayerActionDirect(player, actionType);
+    }
+  };
+
+  // 新增：直接执行玩家操作
+  const handlePlayerActionDirect = async (player, actionType, amount = 0) => {
+    try {
+      await makeAction(
+        gameId, 
+        player.id, 
+        actionType, 
+        amount, 
+        gameState?.game?.currentRound
+      );
+    } catch (err) {
+      console.error('Failed to make player action:', err);
+    }
+  };
+
+  // 新增：确认加注
+  const handleRaiseConfirm = async (amount) => {
+    if (!selectedPlayerForRaise) return;
+
+    try {
+      await handlePlayerActionDirect(selectedPlayerForRaise, 'raise', amount);
+      setShowRaiseDialog(false);
+      setSelectedPlayerForRaise(null);
+    } catch (err) {
+      console.error('Failed to raise:', err);
+    }
+  };
+
+  const handleCurrentPlayerAction = async (actionType, amount = 0) => {
     if (!currentPlayer || !gameState) return;
 
     try {
@@ -373,10 +417,11 @@ const GameTable = ({ gameId, onGameEnd }) => {
                 isCurrentPlayer={player.id === gameState?.game?.currentPlayerId}
                 isMe={isMe}
                 myPlayerId={myPlayerId}
-                onAction={handlePlayerAction}
+                onAction={handleCurrentPlayerAction}
                 onGetAIRecommendation={handleGetAIRecommendation}
                 onSetAsMe={handleSetAsMe}
                 onSetPlayerHoleCards={handleSetPlayerHoleCards}
+                onPlayerAction={handlePlayerAction}
               />
             );
           })}
@@ -509,7 +554,7 @@ const GameTable = ({ gameId, onGameEnd }) => {
         <BettingInterface
           game={game}
           player={currentPlayer}
-          onAction={handlePlayerAction}
+          onAction={handleCurrentPlayerAction}
           onClose={() => setShowBettingInterface(false)}
         />
       )}
@@ -517,7 +562,7 @@ const GameTable = ({ gameId, onGameEnd }) => {
       {showAIRecommendation && (
         <AIRecommendation
           onAccept={(action, amount) => {
-            handlePlayerAction(action, amount);
+            handleCurrentPlayerAction(action, amount);
             setShowAIRecommendation(false);
           }}
           onReject={() => setShowAIRecommendation(false)}
@@ -573,6 +618,19 @@ const GameTable = ({ gameId, onGameEnd }) => {
           onSave={handleSaveBlindSettings}
           onCancel={() => setShowBlindSettingsDialog(false)}
           loading={loading}
+        />
+      )}
+
+      {showRaiseDialog && selectedPlayerForRaise && (
+        <RaiseAmountDialog
+          player={selectedPlayerForRaise}
+          currentBet={gameState?.game?.currentBet || 0}
+          playerChips={selectedPlayerForRaise.chips}
+          onConfirm={handleRaiseConfirm}
+          onCancel={() => {
+            setShowRaiseDialog(false);
+            setSelectedPlayerForRaise(null);
+          }}
         />
       )}
 

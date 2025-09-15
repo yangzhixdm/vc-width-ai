@@ -11,7 +11,8 @@ const PlayerSeat = ({
   onAction, 
   onGetAIRecommendation,
   onSetAsMe,
-  onSetPlayerHoleCards
+  onSetPlayerHoleCards,
+  onPlayerAction
 }) => {
   const getStatusClass = () => {
     if (player.isFolded) return 'folded';
@@ -44,6 +45,13 @@ const PlayerSeat = ({
     e.stopPropagation();
     if (onSetPlayerHoleCards) {
       onSetPlayerHoleCards(player);
+    }
+  };
+
+  const handleActionClick = (actionType, e) => {
+    e.stopPropagation();
+    if (onPlayerAction) {
+      onPlayerAction(player, actionType);
     }
   };
 
@@ -97,6 +105,40 @@ const PlayerSeat = ({
           </button>
         )}
       </div>
+
+      {/* 操作按钮区域 */}
+      {onPlayerAction && (
+        <div className="player-seat-actions">
+          <button 
+            className="player-seat-action-btn call"
+            onClick={(e) => handleActionClick('call', e)}
+            title="跟注"
+          >
+            Call
+          </button>
+          <button 
+            className="player-seat-action-btn raise"
+            onClick={(e) => handleActionClick('raise', e)}
+            title="加注"
+          >
+            Raise
+          </button>
+          <button 
+            className="player-seat-action-btn fold"
+            onClick={(e) => handleActionClick('fold', e)}
+            title="弃牌"
+          >
+            Fold
+          </button>
+          <button 
+            className="player-seat-action-btn allin"
+            onClick={(e) => handleActionClick('allin', e)}
+            title="全下"
+          >
+            All In
+          </button>
+        </div>
+      )}
     </div>
   );
 };

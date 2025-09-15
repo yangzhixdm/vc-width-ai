@@ -116,42 +116,67 @@
 
 .player-seat-actions {
   display: flex;
-  gap: 8px;
+  gap: 15px;
   margin-top: 8px;
+  flex-wrap: unwrap;
+  justify-content: center;
 }
 
 .player-seat-action-btn {
-  padding: 6px 12px;
+  padding: 15px 20px;
   border: none;
-  border-radius: 6px;
-  font-size: 10px;
+  border-radius: 4px;
+  font-size: 9px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
+  min-width: 35px;
 }
 
-.player-seat-action-btn.primary {
-  background: linear-gradient(135deg, #4a9eff 0%, #357abd 100%);
+.player-seat-action-btn.call {
+  background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%);
   color: white;
-  box-shadow: 0 2px 8px rgba(74, 158, 255, 0.3);
+  box-shadow: 0 2px 6px rgba(76, 175, 80, 0.3);
 }
 
-.player-seat-action-btn.primary:hover {
+.player-seat-action-btn.call:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(74, 158, 255, 0.4);
+  box-shadow: 0 4px 10px rgba(76, 175, 80, 0.4);
 }
 
-.player-seat-action-btn.secondary {
-  background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+.player-seat-action-btn.raise {
+  background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
   color: white;
-  box-shadow: 0 2px 8px rgba(108, 117, 125, 0.3);
+  box-shadow: 0 2px 6px rgba(255, 152, 0, 0.3);
 }
 
-.player-seat-action-btn.secondary:hover {
+.player-seat-action-btn.raise:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(108, 117, 125, 0.4);
+  box-shadow: 0 4px 10px rgba(255, 152, 0, 0.4);
+}
+
+.player-seat-action-btn.fold {
+  background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+  color: white;
+  box-shadow: 0 2px 6px rgba(244, 67, 54, 0.3);
+}
+
+.player-seat-action-btn.fold:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(244, 67, 54, 0.4);
+}
+
+.player-seat-action-btn.allin {
+  background: linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%);
+  color: white;
+  box-shadow: 0 2px 6px rgba(156, 39, 176, 0.3);
+}
+
+.player-seat-action-btn.allin:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(156, 39, 176, 0.4);
 }
 
 .player-seat-action-btn:disabled {
