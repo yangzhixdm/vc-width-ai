@@ -96,6 +96,8 @@ export const GameProvider = ({ children }) => {
     setError(null);
     try {
       const response = await gameAPI.makeAction(gameId, playerId, actionType, amount, round);
+      console.log('makeAction response:', response);
+      console.log('makeAction response:', response.data['nextPlayer']['name']);
       if (response.success) {
         // Refresh game state after action
         await getGameState(gameId);

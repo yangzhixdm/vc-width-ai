@@ -392,7 +392,6 @@ const GameTable = ({ gameId, onGameEnd }) => {
       />
       
       <div className="game-table">
-
         <div className="game-table-player-positions">
           {players.map((player, index) => {
             const position = getAdjustedPlayerPosition(index, players.length, myPlayerIndex);
@@ -426,7 +425,6 @@ const GameTable = ({ gameId, onGameEnd }) => {
       {showMyHoleCards && myPlayer && (
         <div className="my-hole-cards-container">
           <div className="my-hole-cards-header">
-            <h3>我的手牌 - {myPlayer.name}</h3>
             <button 
               className="set-hole-cards-btn"
               onClick={() => setShowHoleCardsSelector(true)}
