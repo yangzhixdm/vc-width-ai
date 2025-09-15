@@ -1,0 +1,108 @@
+/* GameInfo Component Styles */
+.game-info-container {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: 100px;
+}
+
+.game-info-card {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 15px 20px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 120px;
+}
+
+.game-info-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #4a9eff 0%, #357abd 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(74, 158, 255, 0.3);
+}
+
+.game-info-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.game-info-label {
+  color: #d4c4a8;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.game-info-value {
+  color: #f4e4bc;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.game-round-info {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 15px 20px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 150px;
+}
+
+.game-round-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(255, 152, 0, 0.3);
+}
+
+.game-round-value {
+  color: #f4e4bc;
+  font-size: 16px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .game-info-container {
+    gap: 15px;
+    margin-bottom: 60px;
+  }
+  
+  .game-info-card,
+  .game-round-info {
+    min-width: 100px;
+    padding: 12px 16px;
+  }
+  
+  .game-info-icon,
+  .game-round-icon {
+    width: 35px;
+    height: 35px;
+  }
+  
+  .game-info-value,
+  .game-round-value {
+    font-size: 14px;
+  }
+}

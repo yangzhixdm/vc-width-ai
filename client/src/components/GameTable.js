@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import styled from 'styled-components';
 import { useGame } from '../hooks/useGame';
 import PlayerSeat from './PlayerSeat';
 import CommunityCards from './CommunityCards';
@@ -11,151 +10,7 @@ import CommunityCardsSelector from './CommunityCardsSelector';
 import SettleChipsDialog from './SettleChipsDialog';
 import AddPlayerDialog from './AddPlayerDialog';
 import BlindSettingsDialog from './BlindSettingsDialog';
-
-const TableContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 20px;
-  max-width: 1200px;
-  width: 100%;
-`;
-
-const Table = styled.div`
-  position: relative;
-  width: 600px;
-  height: 400px;
-  background: radial-gradient(circle, #0d4a3a 0%, #0a3d2e 100%);
-  border-radius: 50%;
-  border: 8px solid #8b4513;
-  box-shadow: 
-    inset 0 0 50px rgba(0, 0, 0, 0.5),
-    0 0 30px rgba(0, 0, 0, 0.3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 40px 0;
-`;
-
-const CenterArea = styled.div`
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 20px;
-`;
-
-const PotDisplay = styled.div`
-  background: rgba(255, 215, 0, 0.9);
-  color: #000;
-  padding: 12px 24px;
-  border-radius: 20px;
-  font-size: 24px;
-  font-weight: bold;
-  text-align: center;
-  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
-  min-width: 120px;
-`;
-
-const RoundDisplay = styled.div`
-  color: #f4e4bc;
-  font-size: 18px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-`;
-
-const PlayerPositions = styled.div`
-  position: absolute;
-  width: 100%;
-  height: 100%;
-`;
-
-const GameControls = styled.div`
-  display: flex;
-  gap: 20px;
-  align-items: center;
-`;
-
-const TableControls = styled.div`
-  position: absolute;
-  top: 20px;
-  left: 20px;
-  display: flex;
-  gap: 15px;
-  z-index: 10;
-`;
-
-const TableControlButton = styled.button`
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
-  font-weight: bold;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-
-  &.add-player {
-    background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%);
-    color: white;
-    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
-  }
-
-  &.settings {
-    background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
-    color: white;
-    box-shadow: 0 4px 15px rgba(255, 152, 0, 0.4);
-  }
-
-  &:hover {
-    transform: translateY(-2px) scale(1.05);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
-  }
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none !important;
-  }
-`;
-
-const ControlButton = styled.button`
-  padding: 12px 24px;
-  border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-
-  &.btn-secondary {
-    background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
-    color: white;
-    box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
-  }
-
-  &.btn-secondary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(108, 117, 125, 0.4);
-  }
-
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none !important;
-    box-shadow: none !important;
-  }
-`;
+import './GameTable.css';
 
 const GameTable = ({ gameId, onGameEnd }) => {
   const { 
@@ -187,15 +42,15 @@ const GameTable = ({ gameId, onGameEnd }) => {
   getGameStateRef.current = getGameState;
 
   // Load game state on mount and periodically
-  useEffect(() => {
-    if (gameId) {
-      getGameStateRef.current(gameId);
-      const interval = setInterval(() => {
-        getGameStateRef.current(gameId);
-      }, 2000);
-      return () => clearInterval(interval);
-    }
-  }, [gameId]); // 只依赖 gameId，避免无限循环
+  // useEffect(() => {
+  //   if (gameId) {
+  //     getGameStateRef.current(gameId);
+  //     const interval = setInterval(() => {
+  //       getGameStateRef.current(gameId);
+  //     }, 2000);
+  //     return () => clearInterval(interval);
+  //   }
+  // }, [gameId]); // 只依赖 gameId，避免无限循环
 
   // Find current player to act
   useEffect(() => {
@@ -379,30 +234,30 @@ const GameTable = ({ gameId, onGameEnd }) => {
   const { game, players = [] } = gameState;
 
   return (
-    <TableContainer>
+    <div className="game-table-container">
       <GameInfo game={game} players={players} />
       
-      <Table>
-        <TableControls>
-          <TableControlButton 
-            className="add-player"
+      <div className="game-table">
+        <div className="game-table-table-controls">
+          <button 
+            className="game-table-control-button add-player"
             onClick={() => setShowAddPlayerDialog(true)}
             disabled={loading || players.length >= 8}
             title="Add Player"
           >
             +
-          </TableControlButton>
-          <TableControlButton 
-            className="settings"
+          </button>
+          <button 
+            className="game-table-control-button settings"
             onClick={() => setShowBlindSettingsDialog(true)}
             disabled={loading}
             title="Blind Settings"
           >
             ⚙
-          </TableControlButton>
-        </TableControls>
+          </button>
+        </div>
 
-        <PlayerPositions>
+        <div className="game-table-player-positions">
           {players.map((player, index) => {
             const position = getPlayerPosition(index, players.length);
             return (
@@ -416,19 +271,19 @@ const GameTable = ({ gameId, onGameEnd }) => {
               />
             );
           })}
-        </PlayerPositions>
+        </div>
 
-        <CenterArea>
+        <div className="game-table-center-area">
           <CommunityCards cards={game?.communityCards || []} />
-          <PotDisplay>${game?.currentPot || 0}</PotDisplay>
-          <RoundDisplay>{game?.currentRound || 'preflop'}</RoundDisplay>
-        </CenterArea>
-      </Table>
+          <div className="game-table-pot-display">${game?.currentPot || 0}</div>
+          <div className="game-table-round-display">{game?.currentRound || 'preflop'}</div>
+        </div>
+      </div>
 
-      <GameControls>
+      <div className="game-table-controls">
         {gameState?.game?.status === 'waiting' && (
-          <ControlButton 
-            className="btn-secondary"
+          <button 
+            className="game-table-control-btn btn-secondary"
             onClick={handleStartGame}
             disabled={loading}
             style={{
@@ -437,76 +292,76 @@ const GameTable = ({ gameId, onGameEnd }) => {
             }}
           >
             {loading ? 'Starting...' : 'Start Game'}
-          </ControlButton>
+          </button>
         )}
 
         {gameState?.game?.status === 'active' && currentPlayer?.isHuman && (
-          <ControlButton 
-            className="btn-secondary"
+          <button 
+            className="game-table-control-btn btn-secondary"
             onClick={() => setShowBettingInterface(true)}
             disabled={!currentPlayer || loading}
           >
             Make Move
-          </ControlButton>
+          </button>
         )}
         
         {gameState?.game?.status === 'active' && currentPlayer?.isHuman && (
-          <ControlButton 
-            className="btn-secondary"
+          <button 
+            className="game-table-control-btn btn-secondary"
             onClick={handleGetAIRecommendation}
             disabled={!currentPlayer || loading}
           >
             Get AI Advice
-          </ControlButton>
+          </button>
         )}
         
         {gameState?.game?.status === 'active' && (
-          <ControlButton 
-            className="btn-secondary"
+          <button 
+            className="game-table-control-btn btn-secondary"
             onClick={handleDealNextCards}
             disabled={loading}
           >
             Deal Next Cards
-          </ControlButton>
+          </button>
         )}
         
         {gameState?.game?.status === 'active' && currentPlayer && gameState?.game.currentRound === 'preflop' && (
-          <ControlButton 
-            className="btn-secondary"
+          <button 
+            className="game-table-control-btn btn-secondary"
             onClick={() => setShowHoleCardsSelector(true)}
             disabled={loading}
           >
             Set Hole Cards
-          </ControlButton>
+          </button>
         )}
         
         {gameState?.game?.status === 'active' && (
-          <ControlButton 
-            className="btn-secondary"
+          <button 
+            className="game-table-control-btn btn-secondary"
             onClick={() => setShowSettleDialog(true)}
             disabled={loading || (game?.currentPot || 0) === 0}
           >
             Settle Chips
-          </ControlButton>
+          </button>
         )}
         
         {gameState?.game?.status === 'active' && (
-          <ControlButton 
-            className="btn-secondary"
+          <button 
+            className="game-table-control-btn btn-secondary"
             onClick={handleEndHand}
             disabled={loading}
           >
             End Hand
-          </ControlButton>
+          </button>
         )}
         
-        <ControlButton 
-          className="btn-secondary"
+        <button 
+          className="game-table-control-btn btn-secondary"
           onClick={onGameEnd}
         >
           End Game
-        </ControlButton>
-      </GameControls>
+        </button>
+      </div>
 
       {showBettingInterface && (
         <BettingInterface
@@ -577,11 +432,11 @@ const GameTable = ({ gameId, onGameEnd }) => {
       )}
 
       {error && (
-        <div style={{ color: '#ff6b6b', textAlign: 'center', marginTop: '20px' }}>
+        <div className="game-table-error">
           {error}
         </div>
       )}
-    </TableContainer>
+    </div>
   );
 };
 

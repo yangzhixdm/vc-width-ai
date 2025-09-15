@@ -12,7 +12,7 @@ class GameService {
     const game = await Game.create({
       smallBlind,
       bigBlind,
-      currentPot: smallBlind + bigBlind
+      currentPot: 0
     });
     return game;
   }

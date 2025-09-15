@@ -1,89 +1,6 @@
 import React from 'react';
-import styled from 'styled-components';
 import { Users, DollarSign, Clock, Target } from 'lucide-react';
-
-const InfoContainer = styled.div`
-  display: flex;
-  gap: 20px;
-  flex-wrap: wrap;
-  justify-content: center;
-  margin-bottom: 20px;
-`;
-
-const InfoCard = styled.div`
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  padding: 15px 20px;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-width: 120px;
-`;
-
-const InfoIcon = styled.div`
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #4a9eff 0%, #357abd 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 8px rgba(74, 158, 255, 0.3);
-`;
-
-const InfoContent = styled.div`
-  display: flex;
-  flex-direction: column;
-`;
-
-const InfoLabel = styled.div`
-  color: #d4c4a8;
-  font-size: 12px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-`;
-
-const InfoValue = styled.div`
-  color: #f4e4bc;
-  font-size: 16px;
-  font-weight: 600;
-`;
-
-const RoundInfo = styled.div`
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  padding: 15px 20px;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-width: 150px;
-`;
-
-const RoundIcon = styled.div`
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 8px rgba(255, 152, 0, 0.3);
-`;
-
-const RoundValue = styled.div`
-  color: #f4e4bc;
-  font-size: 16px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-`;
+import './GameInfo.css';
 
 const GameInfo = ({ game, players = [] }) => {
   const activePlayers = players.filter(p => p.isActive && !p.isFolded).length;
@@ -103,44 +20,44 @@ const GameInfo = ({ game, players = [] }) => {
   };
 
   return (
-    <InfoContainer>
-      <InfoCard>
-        <InfoIcon>
+    <div className="game-info-container">
+      <div className="game-info-card">
+        <div className="game-info-icon">
           <Users size={20} color="white" />
-        </InfoIcon>
-        <InfoContent>
-          <InfoLabel>Active Players</InfoLabel>
-          <InfoValue>{activePlayers}/{players.length}</InfoValue>
-        </InfoContent>
-      </InfoCard>
+        </div>
+        <div className="game-info-content">
+          <div className="game-info-label">Active Players</div>
+          <div className="game-info-value">{activePlayers}/{players.length}</div>
+        </div>
+      </div>
 
-      <InfoCard>
-        <InfoIcon>
+      <div className="game-info-card">
+        <div className="game-info-icon">
           <DollarSign size={20} color="white" />
-        </InfoIcon>
-        <InfoContent>
-          <InfoLabel>Total Chips</InfoLabel>
-          <InfoValue>${totalChips}</InfoValue>
-        </InfoContent>
-      </InfoCard>
+        </div>
+        <div className="game-info-content">
+          <div className="game-info-label">Total Chips</div>
+          <div className="game-info-value">${totalChips}</div>
+        </div>
+      </div>
 
-      <InfoCard>
-        <InfoIcon>
+      <div className="game-info-card">
+        <div className="game-info-icon">
           <Target size={20} color="white" />
-        </InfoIcon>
-        <InfoContent>
-          <InfoLabel>Current Bet</InfoLabel>
-          <InfoValue>${currentBet}</InfoValue>
-        </InfoContent>
-      </InfoCard>
+        </div>
+        <div className="game-info-content">
+          <div className="game-info-label">Current Bet</div>
+          <div className="game-info-value">${currentBet}</div>
+        </div>
+      </div>
 
-      <RoundInfo>
-        <RoundIcon>
+      <div className="game-round-info">
+        <div className="game-round-icon">
           <Clock size={20} color="white" />
-        </RoundIcon>
-        <RoundValue>{getRoundDisplay(game?.currentRound || 'preflop')}</RoundValue>
-      </RoundInfo>
-    </InfoContainer>
+        </div>
+        <div className="game-round-value">{getRoundDisplay(game?.currentRound || 'preflop')}</div>
+      </div>
+    </div>
   );
 };
 
