@@ -206,6 +206,81 @@ export const GameProvider = ({ children }) => {
     }
   };
 
+  // Settle chips and determine winner
+  const settleChips = async (gameId, winnerId) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await gameAPI.settleChips(gameId, winnerId);
+      if (response.success) {
+        await getGameState(gameId);
+        return response.data;
+      } else {
+        throw new Error(response.error);
+      }
+    } catch (err) {
+      setError(err.message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // End current hand and prepare for next hand
+  const endHand = async (gameId) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await gameAPI.endHand(gameId);
+      if (response.success) {
+        await getGameState(gameId);
+        return response.data;
+      } else {
+        throw new Error(response.error);
+      }
+    } catch (err) {
+      setError(err.message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Get next player to act
+  const getNextPlayer = async (gameId) => {
+    try {
+      const response = await gameAPI.getNextPlayer(gameId);
+      if (response.success) {
+        return response.data;
+      } else {
+        throw new Error(response.error);
+      }
+    } catch (err) {
+      setError(err.message);
+      throw err;
+    }
+  };
+
+  // Set current player
+  const setCurrentPlayer = async (gameId, playerId) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await gameAPI.setCurrentPlayer(gameId, playerId);
+      if (response.success) {
+        await getGameState(gameId);
+        return response.data;
+      } else {
+        throw new Error(response.error);
+      }
+    } catch (err) {
+      setError(err.message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Clear AI recommendation
   const clearAIRecommendation = () => {
     setAiRecommendation(null);
@@ -231,6 +306,10 @@ export const GameProvider = ({ children }) => {
     getPotSizeSuggestions,
     setHoleCards,
     setCommunityCards,
+    settleChips,
+    endHand,
+    getNextPlayer,
+    setCurrentPlayer,
     clearAIRecommendation,
     clearError
   };

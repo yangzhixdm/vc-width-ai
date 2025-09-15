@@ -27,4 +27,8 @@ router.post('/:gameId/community-cards', GameController.setCommunityCards);
 router.post('/:gameId/settle', GameController.settleChips);
 router.post('/:gameId/end-hand', GameController.endHand);
 
+// Player turn management routes
+router.get('/:gameId/next-player', GameController.getNextPlayer);
+router.post('/:gameId/current-player', GameController.setCurrentPlayer);
+
 module.exports = router;

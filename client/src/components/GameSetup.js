@@ -268,6 +268,14 @@ const GameSetup = ({ onGameStart }) => {
             <Button 
               onClick={handleStartGame} 
               disabled={players.length < 2 || loading}
+              style={{ 
+                background: players.length >= 2 
+                  ? 'linear-gradient(135deg, #4a9eff 0%, #357abd 100%)' 
+                  : 'linear-gradient(135deg, #6c757d 0%, #5a6268 100%)',
+                boxShadow: players.length >= 2 
+                  ? '0 4px 15px rgba(74, 158, 255, 0.3)' 
+                  : '0 4px 15px rgba(108, 117, 125, 0.3)'
+              }}
             >
               {loading ? 'Starting...' : `Start Game (${players.length} players)`}
             </Button>

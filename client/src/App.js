@@ -49,8 +49,7 @@ function App() {
   return (
     <AppContainer>
       <Header>
-        <Title>🃏 Texas Hold'em AI Assistant</Title>
-        <Subtitle>Play poker with AI-powered betting recommendations</Subtitle>
+        <Title>AI Assistant</Title>
       </Header>
       
       <GameProvider>

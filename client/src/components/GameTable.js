@@ -8,6 +8,7 @@ import AIRecommendation from './AIRecommendation';
 import GameInfo from './GameInfo';
 import HoleCardsSelector from './HoleCardsSelector';
 import CommunityCardsSelector from './CommunityCardsSelector';
+import SettleChipsDialog from './SettleChipsDialog';
 
 const TableContainer = styled.div`
   display: flex;
@@ -115,6 +116,8 @@ const GameTable = ({ gameId, onGameEnd }) => {
     getAIRecommendation,
     setHoleCards,
     setCommunityCards,
+    settleChips,
+    endHand,
     loading, 
     error 
   } = useGame();
@@ -124,6 +127,7 @@ const GameTable = ({ gameId, onGameEnd }) => {
   const [showAIRecommendation, setShowAIRecommendation] = useState(false);
   const [showHoleCardsSelector, setShowHoleCardsSelector] = useState(false);
   const [showCommunityCardsSelector, setShowCommunityCardsSelector] = useState(false);
+  const [showSettleDialog, setShowSettleDialog] = useState(false);
   
   // 使用 ref 来存储最新的 getGameState 函数引用
   const getGameStateRef = useRef(getGameState);
@@ -140,9 +144,13 @@ const GameTable = ({ gameId, onGameEnd }) => {
     }
   }, [gameId]); // 只依赖 gameId，避免无限循环
 
-  // Find human player
+  // Find current player to act
   useEffect(() => {
-    if (gameState?.players) {
+    if (gameState?.players && gameState?.game?.currentPlayerId) {
+      const currentPlayerToAct = gameState.players.find(p => p.id === gameState.game.currentPlayerId);
+      setCurrentPlayer(currentPlayerToAct);
+    } else if (gameState?.players) {
+      // Fallback to human player if no current player set
       const humanPlayer = gameState.players.find(p => p.isHuman);
       setCurrentPlayer(humanPlayer);
     }
@@ -152,15 +160,21 @@ const GameTable = ({ gameId, onGameEnd }) => {
     if (!currentPlayer || !gameState) return;
 
     try {
-      await makeAction(
+      const result = await makeAction(
         gameId, 
         currentPlayer.id, 
         actionType, 
         amount, 
         gameState.game.currentRound
       );
+      
       setShowBettingInterface(false);
       setShowAIRecommendation(false);
+      
+      // Show notification about next player if available
+      if (result.nextPlayer) {
+        console.log(`Next player: ${result.nextPlayer.name}`);
+      }
     } catch (err) {
       console.error('Failed to make action:', err);
     }
@@ -217,6 +231,29 @@ const GameTable = ({ gameId, onGameEnd }) => {
     }
   };
 
+  const handleSettleChips = async (winnerId) => {
+    try {
+      const result = await settleChips(gameId, winnerId);
+      console.log(`Winner: ${result.winner.name}, Chips won: ${result.winner.chipsWon}`);
+      setShowSettleDialog(false);
+    } catch (err) {
+      console.error('Failed to settle chips:', err);
+    }
+  };
+
+  const handleEndHand = async () => {
+    try {
+      const result = await endHand(gameId);
+      if (result.gameEnded) {
+        console.log('Game ended:', result.reason);
+      } else {
+        console.log(`Next hand started with ${result.activePlayers} players`);
+      }
+    } catch (err) {
+      console.error('Failed to end hand:', err);
+    }
+  };
+
   const getAllUsedCards = () => {
     if (!gameState) return [];
     
@@ -269,7 +306,7 @@ const GameTable = ({ gameId, onGameEnd }) => {
                 key={player.id}
                 player={player}
                 position={position}
-                isCurrentPlayer={player.id === currentPlayer?.id}
+                isCurrentPlayer={player.id === gameState.game.currentPlayerId}
                 onAction={handlePlayerAction}
                 onGetAIRecommendation={handleGetAIRecommendation}
               />
@@ -285,21 +322,25 @@ const GameTable = ({ gameId, onGameEnd }) => {
       </Table>
 
       <GameControls>
-        <ControlButton 
-          className="btn-secondary"
-          onClick={() => setShowBettingInterface(true)}
-          disabled={!currentPlayer || loading}
-        >
-          Make Move
-        </ControlButton>
+        {currentPlayer?.isHuman && (
+          <ControlButton 
+            className="btn-secondary"
+            onClick={() => setShowBettingInterface(true)}
+            disabled={!currentPlayer || loading}
+          >
+            Make Move
+          </ControlButton>
+        )}
         
-        <ControlButton 
-          className="btn-secondary"
-          onClick={handleGetAIRecommendation}
-          disabled={!currentPlayer || loading}
-        >
-          Get AI Advice
-        </ControlButton>
+        {currentPlayer?.isHuman && (
+          <ControlButton 
+            className="btn-secondary"
+            onClick={handleGetAIRecommendation}
+            disabled={!currentPlayer || loading}
+          >
+            Get AI Advice
+          </ControlButton>
+        )}
         
         <ControlButton 
           className="btn-secondary"
@@ -318,6 +359,22 @@ const GameTable = ({ gameId, onGameEnd }) => {
             Set Hole Cards
           </ControlButton>
         )}
+        
+        <ControlButton 
+          className="btn-secondary"
+          onClick={() => setShowSettleDialog(true)}
+          disabled={loading || game.currentPot === 0}
+        >
+          Settle Chips
+        </ControlButton>
+        
+        <ControlButton 
+          className="btn-secondary"
+          onClick={handleEndHand}
+          disabled={loading}
+        >
+          End Hand
+        </ControlButton>
         
         <ControlButton 
           className="btn-secondary"
@@ -362,6 +419,16 @@ const GameTable = ({ gameId, onGameEnd }) => {
           onConfirm={handleCommunityCardsConfirm}
           onCancel={() => setShowCommunityCardsSelector(false)}
           usedCards={getAllUsedCards()}
+        />
+      )}
+
+      {showSettleDialog && gameState && (
+        <SettleChipsDialog
+          players={gameState.players.filter(p => p.isActive && p.chips > 0)}
+          potAmount={gameState.game.currentPot}
+          onSettle={handleSettleChips}
+          onCancel={() => setShowSettleDialog(false)}
+          loading={loading}
         />
       )}
 

@@ -110,6 +110,34 @@ export const gameAPI = {
       round
     });
     return response.data;
+  },
+
+  // Settle chips and determine winner
+  settleChips: async (gameId, winnerId) => {
+    const response = await api.post(`/api/games/${gameId}/settle`, {
+      winnerId
+    });
+    return response.data;
+  },
+
+  // End current hand and prepare for next hand
+  endHand: async (gameId) => {
+    const response = await api.post(`/api/games/${gameId}/end-hand`);
+    return response.data;
+  },
+
+  // Get next player to act
+  getNextPlayer: async (gameId) => {
+    const response = await api.get(`/api/games/${gameId}/next-player`);
+    return response.data;
+  },
+
+  // Set current player
+  setCurrentPlayer: async (gameId, playerId) => {
+    const response = await api.post(`/api/games/${gameId}/current-player`, {
+      playerId
+    });
+    return response.data;
   }
 };
 

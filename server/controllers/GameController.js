@@ -265,6 +265,56 @@ class GameController {
       };
     }
   }
+
+  // Get next player to act
+  async getNextPlayer(ctx) {
+    try {
+      const { gameId } = ctx.params;
+      
+      const nextPlayer = await GameService.getNextPlayer(gameId);
+      
+      ctx.body = {
+        success: true,
+        data: nextPlayer
+      };
+    } catch (error) {
+      ctx.status = 400;
+      ctx.body = {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+
+  // Set current player
+  async setCurrentPlayer(ctx) {
+    try {
+      const { gameId } = ctx.params;
+      const { playerId } = ctx.request.body;
+      
+      if (!playerId) {
+        ctx.status = 400;
+        ctx.body = {
+          success: false,
+          error: 'Player ID is required'
+        };
+        return;
+      }
+      
+      const game = await GameService.setCurrentPlayer(gameId, playerId);
+      
+      ctx.body = {
+        success: true,
+        data: game
+      };
+    } catch (error) {
+      ctx.status = 400;
+      ctx.body = {
+        success: false,
+        error: error.message
+      };
+    }
+  }
 }
 
 module.exports = new GameController();

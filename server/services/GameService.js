@@ -80,6 +80,59 @@ class GameService {
     }
   }
 
+  // Get next player to act
+  async getNextPlayer(gameId) {
+    const game = await Game.findByPk(gameId, {
+      include: [{ model: Player, as: 'players' }]
+    });
+
+    if (!game) {
+      throw new Error('Game not found');
+    }
+
+    const activePlayers = game.players
+      .filter(p => p.isActive && !p.isFolded && p.chips > 0)
+      .sort((a, b) => a.position - b.position);
+
+    if (activePlayers.length === 0) {
+      return null;
+    }
+
+    // If no current player set, start with small blind or first player
+    if (!game.currentPlayerId) {
+      const sbPlayer = activePlayers.find(p => p.role === 'sb');
+      const firstPlayer = sbPlayer || activePlayers[0];
+      await game.update({ currentPlayerId: firstPlayer.id });
+      return firstPlayer;
+    }
+
+    // Find current player index
+    const currentIndex = activePlayers.findIndex(p => p.id === game.currentPlayerId);
+    
+    // If current player not found or is last, start from beginning
+    if (currentIndex === -1 || currentIndex === activePlayers.length - 1) {
+      const nextPlayer = activePlayers[0];
+      await game.update({ currentPlayerId: nextPlayer.id });
+      return nextPlayer;
+    }
+
+    // Move to next player
+    const nextPlayer = activePlayers[currentIndex + 1];
+    await game.update({ currentPlayerId: nextPlayer.id });
+    return nextPlayer;
+  }
+
+  // Set current player
+  async setCurrentPlayer(gameId, playerId) {
+    const game = await Game.findByPk(gameId);
+    if (!game) {
+      throw new Error('Game not found');
+    }
+
+    await game.update({ currentPlayerId: playerId });
+    return game;
+  }
+
   // Deal hole cards to all players
   async dealHoleCards(gameId) {
     const players = await Player.findAll({ where: { gameId, isActive: true } });
@@ -145,7 +198,17 @@ class GameService {
       communityCards: game.communityCards
     });
 
-    return action;
+    // Auto-advance to next player after action
+    const nextPlayer = await this.getNextPlayer(gameId);
+
+    return {
+      action,
+      nextPlayer: nextPlayer ? {
+        id: nextPlayer.id,
+        name: nextPlayer.name,
+        isHuman: nextPlayer.isHuman
+      } : null
+    };
   }
 
   // Deal community cards
@@ -452,7 +515,8 @@ class GameService {
         currentRound: game.currentRound,
         dealerPosition: game.dealerPosition,
         communityCards: game.communityCards,
-        winner: game.winner
+        winner: game.winner,
+        currentPlayerId: game.currentPlayerId
       },
       players: game.players.map(player => ({
         id: player.id,
