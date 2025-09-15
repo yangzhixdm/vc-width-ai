@@ -41,6 +41,9 @@ const GameTable = ({ gameId, onGameEnd }) => {
   const [myPlayerId, setMyPlayerId] = useState(null);
   const [showMyHoleCards, setShowMyHoleCards] = useState(false);
   
+  // 新增：设置玩家手牌的状态管理
+  const [selectedPlayerForHoleCards, setSelectedPlayerForHoleCards] = useState(null);
+  
   // 使用 ref 来存储最新的 getGameState 函数引用
   const getGameStateRef = useRef(getGameState);
   getGameStateRef.current = getGameState;
@@ -113,6 +116,25 @@ const GameTable = ({ gameId, onGameEnd }) => {
       setShowHoleCardsSelector(false);
     } catch (err) {
       console.error('Failed to set my hole cards:', err);
+    }
+  };
+
+  // 新增：设置玩家手牌的处理函数
+  const handleSetPlayerHoleCards = (player) => {
+    setSelectedPlayerForHoleCards(player);
+    setShowHoleCardsSelector(true);
+  };
+
+  // 新增：确认设置玩家手牌
+  const handleSetPlayerHoleCardsConfirm = async (holeCards) => {
+    if (!selectedPlayerForHoleCards) return;
+
+    try {
+      await setHoleCards(gameId, selectedPlayerForHoleCards.id, holeCards);
+      setShowHoleCardsSelector(false);
+      setSelectedPlayerForHoleCards(null);
+    } catch (err) {
+      console.error('Failed to set player hole cards:', err);
     }
   };
 
@@ -354,6 +376,7 @@ const GameTable = ({ gameId, onGameEnd }) => {
                 onAction={handlePlayerAction}
                 onGetAIRecommendation={handleGetAIRecommendation}
                 onSetAsMe={handleSetAsMe}
+                onSetPlayerHoleCards={handleSetPlayerHoleCards}
               />
             );
           })}
@@ -503,9 +526,12 @@ const GameTable = ({ gameId, onGameEnd }) => {
 
       {showHoleCardsSelector && (
         <HoleCardsSelector
-          player={myPlayerId ? myPlayer : currentPlayer}
-          onConfirm={myPlayerId ? handleSetMyHoleCards : handleHoleCardsConfirm}
-          onCancel={() => setShowHoleCardsSelector(false)}
+          player={selectedPlayerForHoleCards || (myPlayerId ? myPlayer : currentPlayer)}
+          onConfirm={selectedPlayerForHoleCards ? handleSetPlayerHoleCardsConfirm : (myPlayerId ? handleSetMyHoleCards : handleHoleCardsConfirm)}
+          onCancel={() => {
+            setShowHoleCardsSelector(false);
+            setSelectedPlayerForHoleCards(null);
+          }}
           usedCards={getAllUsedCards()}
         />
       )}

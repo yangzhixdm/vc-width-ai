@@ -10,7 +10,8 @@ const PlayerSeat = ({
   myPlayerId,
   onAction, 
   onGetAIRecommendation,
-  onSetAsMe
+  onSetAsMe,
+  onSetPlayerHoleCards
 }) => {
   const getStatusClass = () => {
     if (player.isFolded) return 'folded';
@@ -39,6 +40,13 @@ const PlayerSeat = ({
     }
   };
 
+  const handleAvatarClick = (e) => {
+    e.stopPropagation();
+    if (onSetPlayerHoleCards) {
+      onSetPlayerHoleCards(player);
+    }
+  };
+
   return (
     <div
       className={`player-seat-container ${isCurrentPlayer ? 'current-player' : ''} ${isMe ? 'is-me' : ''}`}
@@ -48,10 +56,12 @@ const PlayerSeat = ({
       }}
     >
       <div 
-        className={`player-seat-avatar ${getStatusClass()} ${isCurrentPlayer ? 'current-player' : ''}`}
+        className={`player-seat-avatar ${getStatusClass()} ${isCurrentPlayer ? 'current-player' : ''} clickable-avatar`}
         style={{
           background: player.avatar ? `url(${player.avatar})` : 'linear-gradient(135deg, #4a9eff 0%, #357abd 100%)'
         }}
+        onClick={handleAvatarClick}
+        title="点击设置手牌"
       >
         {!player.avatar && <User size={24} color="white" />}
         {player.currentBet > 0 && (

@@ -215,6 +215,17 @@
   box-shadow: 0 4px 12px rgba(231, 76, 60, 0.4);
 }
 
+/* 可点击头像样式 */
+.clickable-avatar {
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.clickable-avatar:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 20px rgba(74, 158, 255, 0.6);
+}
+
 /* 自己玩家的特殊样式 */
 .player-seat-container.is-me {
   border: 3px solid #e74c3c;
