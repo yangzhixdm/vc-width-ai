@@ -36,12 +36,12 @@ function App() {
   const [gameId, setGameId] = useState(null);
   const [isGameActive, setIsGameActive] = useState(false);
 
-  const handleGameStart = (newGameId) => {
+  const handleEnterGameTable = (newGameId) => {
     setGameId(newGameId);
     setIsGameActive(true);
   };
 
-  const handleGameEnd = () => {
+  const handleExitGameTable = () => {
     setGameId(null);
     setIsGameActive(false);
   };
@@ -54,11 +54,11 @@ function App() {
       
       <GameProvider>
         {!isGameActive ? (
-          <GameSetup onGameStart={handleGameStart} />
+          <GameSetup onGameStart={handleEnterGameTable} />
         ) : (
           <GameTable 
             gameId={gameId} 
-            onGameEnd={handleGameEnd}
+            onGameEnd={handleExitGameTable}
           />
         )}
       </GameProvider>

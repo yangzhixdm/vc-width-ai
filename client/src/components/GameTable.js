@@ -9,6 +9,8 @@ import GameInfo from './GameInfo';
 import HoleCardsSelector from './HoleCardsSelector';
 import CommunityCardsSelector from './CommunityCardsSelector';
 import SettleChipsDialog from './SettleChipsDialog';
+import AddPlayerDialog from './AddPlayerDialog';
+import BlindSettingsDialog from './BlindSettingsDialog';
 
 const TableContainer = styled.div`
   display: flex;
@@ -78,6 +80,53 @@ const GameControls = styled.div`
   align-items: center;
 `;
 
+const TableControls = styled.div`
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  display: flex;
+  gap: 15px;
+  z-index: 10;
+`;
+
+const TableControlButton = styled.button`
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: bold;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+
+  &.add-player {
+    background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+  }
+
+  &.settings {
+    background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+    color: white;
+    box-shadow: 0 4px 15px rgba(255, 152, 0, 0.4);
+  }
+
+  &:hover {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none !important;
+  }
+`;
+
 const ControlButton = styled.button`
   padding: 12px 24px;
   border: none;
@@ -118,6 +167,8 @@ const GameTable = ({ gameId, onGameEnd }) => {
     setCommunityCards,
     settleChips,
     endHand,
+    startGame,
+    addPlayer,
     loading, 
     error 
   } = useGame();
@@ -128,6 +179,8 @@ const GameTable = ({ gameId, onGameEnd }) => {
   const [showHoleCardsSelector, setShowHoleCardsSelector] = useState(false);
   const [showCommunityCardsSelector, setShowCommunityCardsSelector] = useState(false);
   const [showSettleDialog, setShowSettleDialog] = useState(false);
+  const [showAddPlayerDialog, setShowAddPlayerDialog] = useState(false);
+  const [showBlindSettingsDialog, setShowBlindSettingsDialog] = useState(false);
   
   // 使用 ref 来存储最新的 getGameState 函数引用
   const getGameStateRef = useRef(getGameState);
@@ -254,6 +307,36 @@ const GameTable = ({ gameId, onGameEnd }) => {
     }
   };
 
+  const handleStartGame = async () => {
+    try {
+      await startGame(gameId);
+      console.log('Game started successfully');
+    } catch (err) {
+      console.error('Failed to start game:', err);
+    }
+  };
+
+  const handleAddPlayer = async (playerData) => {
+    try {
+      await addPlayer(gameId, playerData);
+      setShowAddPlayerDialog(false);
+      console.log('Player added successfully');
+    } catch (err) {
+      console.error('Failed to add player:', err);
+    }
+  };
+
+  const handleSaveBlindSettings = async ({ smallBlind, bigBlind }) => {
+    try {
+      // Note: This would require a new API endpoint to update blind settings
+      // For now, we'll just close the dialog
+      setShowBlindSettingsDialog(false);
+      console.log('Blind settings updated:', { smallBlind, bigBlind });
+    } catch (err) {
+      console.error('Failed to update blind settings:', err);
+    }
+  };
+
   const getAllUsedCards = () => {
     if (!gameState) return [];
     
@@ -298,6 +381,25 @@ const GameTable = ({ gameId, onGameEnd }) => {
       <GameInfo game={game} players={players} />
       
       <Table>
+        <TableControls>
+          <TableControlButton 
+            className="add-player"
+            onClick={() => setShowAddPlayerDialog(true)}
+            disabled={loading || players.length >= 8}
+            title="Add Player"
+          >
+            +
+          </TableControlButton>
+          <TableControlButton 
+            className="settings"
+            onClick={() => setShowBlindSettingsDialog(true)}
+            disabled={loading}
+            title="Blind Settings"
+          >
+            ⚙
+          </TableControlButton>
+        </TableControls>
+
         <PlayerPositions>
           {players.map((player, index) => {
             const position = getPlayerPosition(index, players.length);
@@ -322,7 +424,21 @@ const GameTable = ({ gameId, onGameEnd }) => {
       </Table>
 
       <GameControls>
-        {currentPlayer?.isHuman && (
+        {gameState?.game?.status === 'waiting' && (
+          <ControlButton 
+            className="btn-secondary"
+            onClick={handleStartGame}
+            disabled={loading}
+            style={{
+              background: 'linear-gradient(135deg, #4caf50 0%, #388e3c 100%)',
+              boxShadow: '0 4px 15px rgba(76, 175, 80, 0.3)'
+            }}
+          >
+            {loading ? 'Starting...' : 'Start Game'}
+          </ControlButton>
+        )}
+
+        {gameState?.game?.status === 'active' && currentPlayer?.isHuman && (
           <ControlButton 
             className="btn-secondary"
             onClick={() => setShowBettingInterface(true)}
@@ -332,7 +448,7 @@ const GameTable = ({ gameId, onGameEnd }) => {
           </ControlButton>
         )}
         
-        {currentPlayer?.isHuman && (
+        {gameState?.game?.status === 'active' && currentPlayer?.isHuman && (
           <ControlButton 
             className="btn-secondary"
             onClick={handleGetAIRecommendation}
@@ -342,15 +458,17 @@ const GameTable = ({ gameId, onGameEnd }) => {
           </ControlButton>
         )}
         
-        <ControlButton 
-          className="btn-secondary"
-          onClick={handleDealNextCards}
-          disabled={loading}
-        >
-          Deal Next Cards
-        </ControlButton>
+        {gameState?.game?.status === 'active' && (
+          <ControlButton 
+            className="btn-secondary"
+            onClick={handleDealNextCards}
+            disabled={loading}
+          >
+            Deal Next Cards
+          </ControlButton>
+        )}
         
-        {currentPlayer && gameState?.game.currentRound === 'preflop' && (
+        {gameState?.game?.status === 'active' && currentPlayer && gameState?.game.currentRound === 'preflop' && (
           <ControlButton 
             className="btn-secondary"
             onClick={() => setShowHoleCardsSelector(true)}
@@ -360,21 +478,25 @@ const GameTable = ({ gameId, onGameEnd }) => {
           </ControlButton>
         )}
         
-        <ControlButton 
-          className="btn-secondary"
-          onClick={() => setShowSettleDialog(true)}
-          disabled={loading || game.currentPot === 0}
-        >
-          Settle Chips
-        </ControlButton>
+        {gameState?.game?.status === 'active' && (
+          <ControlButton 
+            className="btn-secondary"
+            onClick={() => setShowSettleDialog(true)}
+            disabled={loading || game.currentPot === 0}
+          >
+            Settle Chips
+          </ControlButton>
+        )}
         
-        <ControlButton 
-          className="btn-secondary"
-          onClick={handleEndHand}
-          disabled={loading}
-        >
-          End Hand
-        </ControlButton>
+        {gameState?.game?.status === 'active' && (
+          <ControlButton 
+            className="btn-secondary"
+            onClick={handleEndHand}
+            disabled={loading}
+          >
+            End Hand
+          </ControlButton>
+        )}
         
         <ControlButton 
           className="btn-secondary"
@@ -428,6 +550,26 @@ const GameTable = ({ gameId, onGameEnd }) => {
           potAmount={gameState.game.currentPot}
           onSettle={handleSettleChips}
           onCancel={() => setShowSettleDialog(false)}
+          loading={loading}
+        />
+      )}
+
+      {showAddPlayerDialog && (
+        <AddPlayerDialog
+          onAddPlayer={handleAddPlayer}
+          onCancel={() => setShowAddPlayerDialog(false)}
+          loading={loading}
+          maxPlayers={8}
+          currentPlayerCount={gameState?.players?.length || 0}
+        />
+      )}
+
+      {showBlindSettingsDialog && gameState && (
+        <BlindSettingsDialog
+          currentSmallBlind={gameState.game.smallBlind}
+          currentBigBlind={gameState.game.bigBlind}
+          onSave={handleSaveBlindSettings}
+          onCancel={() => setShowBlindSettingsDialog(false)}
           loading={loading}
         />
       )}
