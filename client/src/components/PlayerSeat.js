@@ -6,8 +6,11 @@ const PlayerSeat = ({
   player, 
   position, 
   isCurrentPlayer, 
+  isMe,
+  myPlayerId,
   onAction, 
-  onGetAIRecommendation 
+  onGetAIRecommendation,
+  onSetAsMe
 }) => {
   const getStatusClass = () => {
     if (player.isFolded) return 'folded';
@@ -29,9 +32,16 @@ const PlayerSeat = ({
     return '';
   };
 
+  const handleSetAsMe = (e) => {
+    e.stopPropagation();
+    if (onSetAsMe) {
+      onSetAsMe(player.id);
+    }
+  };
+
   return (
     <div
-      className={`player-seat-container ${isCurrentPlayer ? 'current-player' : ''}`}
+      className={`player-seat-container ${isCurrentPlayer ? 'current-player' : ''} ${isMe ? 'is-me' : ''}`}
       style={{
         left: `${position.x}px`,
         top: `${position.y}px`
@@ -60,12 +70,22 @@ const PlayerSeat = ({
         <div className="player-seat-name">
           {player.name}
           {player.isHuman && ' (You)'}
+          {isMe && ' (Me)'}
         </div>
         <div className="player-seat-chips">
           <Coins size={12} />
           ${player.chips}
         </div>
         <div className="player-seat-position">{player.role}</div>
+        {!isMe && onSetAsMe && !myPlayerId && (
+          <button 
+            className="set-as-me-btn"
+            onClick={handleSetAsMe}
+            title="设置为自己"
+          >
+            设为我
+          </button>
+        )}
       </div>
     </div>
   );

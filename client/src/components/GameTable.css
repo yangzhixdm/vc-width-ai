@@ -185,3 +185,102 @@
     justify-content: center;
   }
 }
+
+/* 自己的手牌显示区域 */
+.my-hole-cards-container {
+  background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+  border-radius: 15px;
+  padding: 20px;
+  margin: 20px 0;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  border: 2px solid #3498db;
+  max-width: 600px;
+  width: 100%;
+}
+
+.my-hole-cards-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.my-hole-cards-header h3 {
+  color: #ecf0f1;
+  margin: 0;
+  font-size: 1.2em;
+  font-weight: 600;
+}
+
+.set-hole-cards-btn {
+  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9em;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+}
+
+.set-hole-cards-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+}
+
+.set-hole-cards-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.my-hole-cards-display {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  min-height: 60px;
+}
+
+.my-hole-card {
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  border: 2px solid #2c3e50;
+  border-radius: 8px;
+  padding: 10px 15px;
+  font-size: 1.1em;
+  font-weight: 600;
+  color: #2c3e50;
+  min-width: 50px;
+  text-align: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+.my-hole-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+}
+
+.no-cards {
+  color: #95a5a6;
+  font-style: italic;
+  font-size: 1em;
+}
+
+/* 响应式设计 - 手牌区域 */
+@media (max-width: 768px) {
+  .my-hole-cards-container {
+    margin: 15px 0;
+    padding: 15px;
+  }
+  
+  .my-hole-cards-header {
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-start;
+  }
+  
+  .my-hole-cards-display {
+    flex-wrap: wrap;
+  }
+}

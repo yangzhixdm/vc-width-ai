@@ -37,6 +37,10 @@ const GameTable = ({ gameId, onGameEnd }) => {
   const [showAddPlayerDialog, setShowAddPlayerDialog] = useState(false);
   const [showBlindSettingsDialog, setShowBlindSettingsDialog] = useState(false);
   
+  // 新增：自己玩家的状态管理
+  const [myPlayerId, setMyPlayerId] = useState(null);
+  const [showMyHoleCards, setShowMyHoleCards] = useState(false);
+  
   // 使用 ref 来存储最新的 getGameState 函数引用
   const getGameStateRef = useRef(getGameState);
   getGameStateRef.current = getGameState;
@@ -63,6 +67,54 @@ const GameTable = ({ gameId, onGameEnd }) => {
       setCurrentPlayer(humanPlayer);
     }
   }, [gameState]);
+
+  // 新增：设置自己玩家的函数
+  const handleSetAsMe = (playerId) => {
+    setMyPlayerId(playerId);
+    setShowMyHoleCards(true);
+  };
+
+  // 新增：获取调整后的玩家位置（将自己显示在正下方）
+  const getAdjustedPlayerPosition = (index, totalPlayers, myPlayerIndex) => {
+    if (myPlayerIndex === -1) {
+      // 如果没有设置自己，使用原始位置
+      return getPlayerPosition(index, totalPlayers);
+    }
+    
+    // 计算需要旋转的角度，使自己显示在正下方（180度位置，即正下方）
+    const myOriginalAngle = (360 / totalPlayers) * myPlayerIndex;
+    const rotationAngle = 180 - myOriginalAngle;
+    
+    const angle = (360 / totalPlayers) * index;
+    const adjustedAngle = angle + rotationAngle;
+    const radius = 320;
+    const x = Math.cos((adjustedAngle - 90) * Math.PI / 180) * radius;
+    const y = Math.sin((adjustedAngle - 90) * Math.PI / 180) * radius;
+    
+    return {
+      x: x + 400,
+      y: y + 300,
+      angle: adjustedAngle
+    };
+  };
+
+  // 新增：获取自己的玩家信息
+  const getMyPlayer = () => {
+    if (!myPlayerId || !gameState?.players) return null;
+    return gameState.players.find(p => p.id === myPlayerId);
+  };
+
+  // 新增：设置自己的手牌
+  const handleSetMyHoleCards = async (holeCards) => {
+    if (!myPlayerId) return;
+
+    try {
+      await setHoleCards(gameId, myPlayerId, holeCards);
+      setShowHoleCardsSelector(false);
+    } catch (err) {
+      console.error('Failed to set my hole cards:', err);
+    }
+  };
 
   const handlePlayerAction = async (actionType, amount = 0) => {
     if (!currentPlayer || !gameState) return;
@@ -215,7 +267,35 @@ const GameTable = ({ gameId, onGameEnd }) => {
   };
 
   const getPlayerPosition = (index, totalPlayers) => {
-    const angle = (360 / totalPlayers) * index;
+    // 按照时钟方向排布：12点、3点、6点、9点方向
+    let angle;
+    
+    if (totalPlayers === 2) {
+      // 2个玩家：12点和6点方向
+      angle = index === 0 ? 0 : 180;
+    } else if (totalPlayers === 3) {
+      // 3个玩家：12点、4点、8点方向
+      angle = index === 0 ? 0 : (index === 1 ? 120 : 240);
+    } else if (totalPlayers === 4) {
+      // 4个玩家：12点、3点、6点、9点方向
+      angle = index * 90;
+    } else if (totalPlayers === 5) {
+      // 5个玩家：12点、2.4点、4.8点、7.2点、9.6点方向
+      angle = index * 72;
+    } else if (totalPlayers === 6) {
+      // 6个玩家：12点、2点、4点、6点、8点、10点方向
+      angle = index * 60;
+    } else if (totalPlayers === 7) {
+      // 7个玩家：均匀分布
+      angle = index * (360 / 7);
+    } else if (totalPlayers === 8) {
+      // 8个玩家：12点、1.5点、3点、4.5点、6点、7.5点、9点、10.5点方向
+      angle = index * 45;
+    } else {
+      // 更多玩家：均匀分布
+      angle = (360 / totalPlayers) * index;
+    }
+    
     const radius = 320; // 增加半径以适应更大的桌子
     const x = Math.cos((angle - 90) * Math.PI / 180) * radius;
     const y = Math.sin((angle - 90) * Math.PI / 180) * radius;
@@ -232,6 +312,8 @@ const GameTable = ({ gameId, onGameEnd }) => {
   }
 
   const { game, players = [] } = gameState;
+  const myPlayer = getMyPlayer();
+  const myPlayerIndex = myPlayer ? players.findIndex(p => p.id === myPlayerId) : -1;
 
   return (
     <div className="game-table-container">
@@ -259,15 +341,19 @@ const GameTable = ({ gameId, onGameEnd }) => {
 
         <div className="game-table-player-positions">
           {players.map((player, index) => {
-            const position = getPlayerPosition(index, players.length);
+            const position = getAdjustedPlayerPosition(index, players.length, myPlayerIndex);
+            const isMe = player.id === myPlayerId;
             return (
               <PlayerSeat
                 key={player.id}
                 player={player}
                 position={position}
                 isCurrentPlayer={player.id === gameState?.game?.currentPlayerId}
+                isMe={isMe}
+                myPlayerId={myPlayerId}
                 onAction={handlePlayerAction}
                 onGetAIRecommendation={handleGetAIRecommendation}
+                onSetAsMe={handleSetAsMe}
               />
             );
           })}
@@ -279,6 +365,33 @@ const GameTable = ({ gameId, onGameEnd }) => {
           <div className="game-table-round-display">{game?.currentRound || 'preflop'}</div>
         </div>
       </div>
+
+      {/* 新增：自己的手牌显示区域 */}
+      {showMyHoleCards && myPlayer && (
+        <div className="my-hole-cards-container">
+          <div className="my-hole-cards-header">
+            <h3>我的手牌 - {myPlayer.name}</h3>
+            <button 
+              className="set-hole-cards-btn"
+              onClick={() => setShowHoleCardsSelector(true)}
+              disabled={loading}
+            >
+              设置手牌
+            </button>
+          </div>
+          <div className="my-hole-cards-display">
+            {myPlayer.holeCards && myPlayer.holeCards.length > 0 ? (
+              myPlayer.holeCards.map((card, index) => (
+                <div key={index} className="my-hole-card">
+                  {card}
+                </div>
+              ))
+            ) : (
+              <div className="no-cards">暂无手牌</div>
+            )}
+          </div>
+        </div>
+      )}
 
       <div className="game-table-controls">
         {gameState?.game?.status === 'waiting' && (
@@ -382,14 +495,21 @@ const GameTable = ({ gameId, onGameEnd }) => {
         />
       )}
 
-      {showHoleCardsSelector && currentPlayer && (
+      {showHoleCardsSelector && (myPlayerId ? (
+        <HoleCardsSelector
+          player={myPlayer}
+          onConfirm={handleSetMyHoleCards}
+          onCancel={() => setShowHoleCardsSelector(false)}
+          usedCards={getAllUsedCards()}
+        />
+      ) : currentPlayer && (
         <HoleCardsSelector
           player={currentPlayer}
           onConfirm={handleHoleCardsConfirm}
           onCancel={() => setShowHoleCardsSelector(false)}
           usedCards={getAllUsedCards()}
         />
-      )}
+      ))}
 
       {showCommunityCardsSelector && gameState && (
         <CommunityCardsSelector
