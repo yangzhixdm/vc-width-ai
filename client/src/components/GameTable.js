@@ -383,27 +383,15 @@ const GameTable = ({ gameId, onGameEnd }) => {
 
   return (
     <div className="game-table-container">
-      <GameInfo game={game} players={players} />
+      <GameInfo 
+        game={game} 
+        players={players} 
+        onAddPlayer={() => setShowAddPlayerDialog(true)}
+        onBlindSettings={() => setShowBlindSettingsDialog(true)}
+        loading={loading}
+      />
       
       <div className="game-table">
-        <div className="game-table-table-controls">
-          <button 
-            className="game-table-control-button add-player"
-            onClick={() => setShowAddPlayerDialog(true)}
-            disabled={loading || players.length >= 8}
-            title="Add Player"
-          >
-            +
-          </button>
-          <button 
-            className="game-table-control-button settings"
-            onClick={() => setShowBlindSettingsDialog(true)}
-            disabled={loading}
-            title="Blind Settings"
-          >
-            ⚙
-          </button>
-        </div>
 
         <div className="game-table-player-positions">
           {players.map((player, index) => {

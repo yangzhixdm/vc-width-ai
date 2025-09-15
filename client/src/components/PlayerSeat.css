@@ -10,18 +10,18 @@
   cursor: pointer;
 }
 
-.player-seat-container:hover {
-  transform: translate(-50%, -50%) scale(1.05);
-}
-
 .player-seat-container.current-player {
   transform: translate(-50%, -50%) scale(1.1);
   filter: drop-shadow(0 0 10px rgba(74, 158, 255, 0.8));
+  box-shadow: 0 0 20px rgba(231, 76, 60, 0.5);
+  border: 2px solid red;
+  border-radius: 10px;
+  padding: 10px;
 }
 
 .player-seat-avatar {
-  width: 60px;
-  height: 60px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   background: linear-gradient(135deg, #4a9eff 0%, #357abd 100%);
   background-size: cover;
@@ -116,7 +116,7 @@
 
 .player-seat-actions {
   display: flex;
-  gap: 15px;
+  gap: 10px;
   margin-top: 8px;
   flex-wrap: unwrap;
   justify-content: center;
@@ -132,7 +132,7 @@
   transition: all 0.2s ease;
   text-transform: uppercase;
   letter-spacing: 0.3px;
-  min-width: 35px;
+  min-width: 80px;
 }
 
 .player-seat-action-btn.call {
@@ -253,9 +253,6 @@
 
 /* 自己玩家的特殊样式 */
 .player-seat-container.is-me {
-  border: 3px solid #e74c3c;
-  box-shadow: 0 0 20px rgba(231, 76, 60, 0.5);
-  border-radius: 15px;
   padding: 5px;
 }
 

@@ -20,10 +20,6 @@ function App() {
 
   return (
     <div className="app-container">
-      <header className="app-header">
-        <h1 className="app-title">AI Assistant</h1>
-      </header>
-      
       <GameProvider>
         {!isGameActive ? (
           <GameSetup onGameStart={handleEnterGameTable} />

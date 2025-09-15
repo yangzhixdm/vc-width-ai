@@ -1,12 +1,9 @@
 import React from 'react';
-import { Users, DollarSign, Clock, Target } from 'lucide-react';
+import { Users, Clock } from 'lucide-react';
 import './GameInfo.css';
 
-const GameInfo = ({ game, players = [] }) => {
+const GameInfo = ({ game, players = [], onAddPlayer, onBlindSettings, loading }) => {
   const activePlayers = players.filter(p => p.isActive && !p.isFolded).length;
-  const totalChips = players.reduce((sum, player) => sum + player.chips, 0);
-  const currentBet = game?.currentBet || 0;
-  const pot = game?.currentPot || 0;
 
   const getRoundDisplay = (round) => {
     switch (round) {
@@ -31,31 +28,31 @@ const GameInfo = ({ game, players = [] }) => {
         </div>
       </div>
 
-      <div className="game-info-card">
-        <div className="game-info-icon">
-          <DollarSign size={20} color="white" />
-        </div>
-        <div className="game-info-content">
-          <div className="game-info-label">Total Chips</div>
-          <div className="game-info-value">${totalChips}</div>
-        </div>
-      </div>
-
-      <div className="game-info-card">
-        <div className="game-info-icon">
-          <Target size={20} color="white" />
-        </div>
-        <div className="game-info-content">
-          <div className="game-info-label">Current Bet</div>
-          <div className="game-info-value">${currentBet}</div>
-        </div>
-      </div>
-
       <div className="game-round-info">
         <div className="game-round-icon">
           <Clock size={20} color="white" />
         </div>
         <div className="game-round-value">{getRoundDisplay(game?.currentRound || 'preflop')}</div>
+      </div>
+
+      {/* 桌子控制按钮 */}
+      <div className="game-table-table-controls">
+        <button 
+          className="game-table-control-button add-player"
+          onClick={onAddPlayer}
+          disabled={loading || players.length >= 8}
+          title="Add Player"
+        >
+          +
+        </button>
+        <button 
+          className="game-table-control-button settings"
+          onClick={onBlindSettings}
+          disabled={loading}
+          title="Blind Settings"
+        >
+          ⚙
+        </button>
       </div>
     </div>
   );
