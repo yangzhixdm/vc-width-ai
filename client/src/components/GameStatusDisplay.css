@@ -1,0 +1,96 @@
+/* GameStatusDisplay Component Styles */
+.game-status-display {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.game-status-card {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 15px 20px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 120px;
+  transition: all 0.3s ease;
+}
+
+.game-status-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.game-status-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  flex-shrink: 0;
+}
+
+.game-status-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.game-status-label {
+  color: #d4c4a8;
+  font-size: 12px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+}
+
+.game-status-value {
+  color: #f4e4bc;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .game-status-display {
+    gap: 10px;
+    margin-bottom: 15px;
+  }
+  
+  .game-status-card {
+    min-width: 100px;
+    padding: 12px 16px;
+  }
+  
+  .game-status-icon {
+    width: 35px;
+    height: 35px;
+  }
+  
+  .game-status-value {
+    font-size: 14px;
+  }
+  
+  .game-status-label {
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 480px) {
+  .game-status-display {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .game-status-card {
+    width: 100%;
+    max-width: 200px;
+  }
+}

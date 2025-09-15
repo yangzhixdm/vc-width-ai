@@ -11,6 +11,8 @@ import SettleChipsDialog from './SettleChipsDialog';
 import AddPlayerDialog from './AddPlayerDialog';
 import BlindSettingsDialog from './BlindSettingsDialog';
 import RaiseAmountDialog from './RaiseAmountDialog';
+import GameFlowNotification from './GameFlowNotification';
+import GameStatusDisplay from './GameStatusDisplay';
 import './GameTable.css';
 
 const GameTable = ({ gameId, onGameEnd }) => {
@@ -48,6 +50,10 @@ const GameTable = ({ gameId, onGameEnd }) => {
   // 新增：加注弹层的状态管理
   const [showRaiseDialog, setShowRaiseDialog] = useState(false);
   const [selectedPlayerForRaise, setSelectedPlayerForRaise] = useState(null);
+  
+  // 新增：游戏流程通知的状态管理
+  const [showGameFlowNotification, setShowGameFlowNotification] = useState(false);
+  const [gameFlowMessage, setGameFlowMessage] = useState('');
   
   // 使用 ref 来存储最新的 getGameState 函数引用
   const getGameStateRef = useRef(getGameState);
@@ -157,13 +163,37 @@ const GameTable = ({ gameId, onGameEnd }) => {
   // 新增：直接执行玩家操作
   const handlePlayerActionDirect = async (player, actionType, amount = 0) => {
     try {
-      await makeAction(
+      const result = await makeAction(
         gameId, 
         player.id, 
         actionType, 
         amount, 
         gameState?.game?.currentRound
       );
+      
+      // Handle game flow notifications
+      if (result.roundComplete && result.nextRound) {
+        let message = '';
+        switch (result.nextRound) {
+          case 'flop':
+            message = '翻牌阶段开始！发3张公共牌';
+            break;
+          case 'turn':
+            message = '转牌阶段开始！发第4张公共牌';
+            break;
+          case 'river':
+            message = '河牌阶段开始！发第5张公共牌';
+            break;
+          case 'showdown':
+            message = '摊牌阶段！比较手牌确定获胜者';
+            break;
+          default:
+            message = `进入${result.nextRound}阶段`;
+        }
+        
+        setGameFlowMessage(message);
+        setShowGameFlowNotification(true);
+      }
     } catch (err) {
       console.error('Failed to make player action:', err);
     }
@@ -196,6 +226,34 @@ const GameTable = ({ gameId, onGameEnd }) => {
       
       setShowBettingInterface(false);
       setShowAIRecommendation(false);
+      
+      // Handle game flow notifications
+      console.log('GameTable - Action result:', result);
+      if (result.roundComplete && result.nextRound) {
+        console.log('Round completed! Next round:', result.nextRound);
+        let message = '';
+        switch (result.nextRound) {
+          case 'flop':
+            message = '翻牌阶段开始！发3张公共牌';
+            break;
+          case 'turn':
+            message = '转牌阶段开始！发第4张公共牌';
+            break;
+          case 'river':
+            message = '河牌阶段开始！发第5张公共牌';
+            break;
+          case 'showdown':
+            message = '摊牌阶段！比较手牌确定获胜者';
+            break;
+          default:
+            message = `进入${result.nextRound}阶段`;
+        }
+        
+        setGameFlowMessage(message);
+        setShowGameFlowNotification(true);
+      } else {
+        console.log('Round not complete yet. roundComplete:', result.roundComplete, 'nextRound:', result.nextRound);
+      }
       
       // Show notification about next player if available
       if (result.nextPlayer) {
@@ -390,6 +448,8 @@ const GameTable = ({ gameId, onGameEnd }) => {
         onBlindSettings={() => setShowBlindSettingsDialog(true)}
         loading={loading}
       />
+      
+      <GameStatusDisplay game={game} players={players} />
       
       <div className="game-table">
         <div className="game-table-player-positions">
@@ -625,6 +685,14 @@ const GameTable = ({ gameId, onGameEnd }) => {
           {error}
         </div>
       )}
+
+      {/* 游戏流程通知 */}
+      <GameFlowNotification
+        gameState={gameState}
+        showNotification={showGameFlowNotification}
+        notificationMessage={gameFlowMessage}
+        onClose={() => setShowGameFlowNotification(false)}
+      />
     </div>
   );
 };

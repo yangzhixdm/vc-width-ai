@@ -97,10 +97,35 @@ export const GameProvider = ({ children }) => {
     try {
       const response = await gameAPI.makeAction(gameId, playerId, actionType, amount, round);
       console.log('makeAction response:', response);
-      console.log('makeAction response:', response.data['nextPlayer']['name']);
+      
       if (response.success) {
+        console.log('Full response data:', response.data);
+        const { roundComplete, nextRound, nextPlayer } = response.data;
+        
         // Refresh game state after action
         await getGameState(gameId);
+        
+        // Handle game flow based on response
+        if (roundComplete) {
+          console.log(`Round completed! Moving to ${nextRound}`);
+          
+          // Show notification about round progression
+          if (nextRound === 'flop') {
+            console.log('Dealing flop (3 community cards)');
+          } else if (nextRound === 'turn') {
+            console.log('Dealing turn (1 community card)');
+          } else if (nextRound === 'river') {
+            console.log('Dealing river (1 community card)');
+          } else if (nextRound === 'showdown') {
+            console.log('Showdown! Comparing hands...');
+          }
+        }
+        
+        // Show next player notification
+        if (nextPlayer) {
+          console.log(`Next player: ${nextPlayer.name}`);
+        }
+        
         return response.data;
       } else {
         throw new Error(response.error);
