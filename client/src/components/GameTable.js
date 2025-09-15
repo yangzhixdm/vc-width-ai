@@ -95,7 +95,7 @@ const GameTable = ({ gameId, onGameEnd }) => {
     
     const angle = (360 / totalPlayers) * index;
     const adjustedAngle = angle + rotationAngle;
-    const radius = 320;
+          const radius = 380;
     const x = Math.cos((adjustedAngle - 90) * Math.PI / 180) * radius;
     const y = Math.sin((adjustedAngle - 90) * Math.PI / 180) * radius;
     
@@ -362,7 +362,7 @@ const GameTable = ({ gameId, onGameEnd }) => {
       angle = (360 / totalPlayers) * index;
     }
     
-    const radius = 320; // 增加半径以适应更大的桌子
+          const radius = 380; // 增加半径让头像放在桌子外面
     const x = Math.cos((angle - 90) * Math.PI / 180) * radius;
     const y = Math.sin((angle - 90) * Math.PI / 180) * radius;
     
