@@ -715,10 +715,10 @@ class GameService {
 
     return {
       winner: {
-        id: winner.playerId,
-        name: winner.name,
+        id: winner.player.playerId,
+        name: winner.player.name,
         chipsWon: potAmount,
-        newChipCount: winner.chips + potAmount
+        newChipCount: winner.player.chips + potAmount
       },
       potAmount,
       gameStatus: 'completed'
@@ -939,8 +939,8 @@ class GameService {
       const winner = winners[i];
       const amount = potPerWinner + (i < remainder ? 1 : 0);
       
-      await winner.update({
-        chips: winner.chips + amount
+      await winner.player.update({
+        chips: winner.player.chips + amount
       });
     }
 
