@@ -43,7 +43,6 @@
   width: 800px;
   height: 600px;
   background: radial-gradient(circle, #0d4a3a 0%, #0a3d2e 100%);
-  border-radius: 50%;
   border: 8px solid #8b4513;
   box-shadow: 
     inset 0 0 50px rgba(0, 0, 0, 0.5),
