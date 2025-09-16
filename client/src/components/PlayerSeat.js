@@ -83,14 +83,14 @@ const PlayerSeat = ({
 
   return (
     <div
-      className={`player-seat-container ${isCurrentPlayer ? 'current-player' : ''} ${isMe ? 'is-me' : ''}`}
+      className={`player-seat-container ${getStatusClass()} ${isCurrentPlayer ? 'current-player' : ''} ${isMe ? 'is-me' : ''}`}
       style={{
         left: `${position.x}px`,
         top: `${position.y}px`
       }}
     >
       <div 
-        className={`player-seat-avatar ${getStatusClass()} ${isCurrentPlayer ? 'current-player' : ''} clickable-avatar`}
+        className={`player-seat-avatar ${isCurrentPlayer ? 'current-player' : ''} clickable-avatar`}
         style={{
           background: player.avatar ? `url(${player.avatar})` : 'linear-gradient(135deg, #4a9eff 0%, #357abd 100%)'
         }}
@@ -127,7 +127,7 @@ const PlayerSeat = ({
             onClick={handleSetAsMe}
             title="设置为自己"
           >
-            设为我
+            me
           </button>
         )}
       </div>

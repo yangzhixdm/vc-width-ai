@@ -1,6 +1,5 @@
 import React from 'react';
 import { Users, Clock } from 'lucide-react';
-import GameStatusDisplay from './GameStatusDisplay';
 import './GameInfo.css';
 
 const GameInfo = ({ game, players = [], onAddPlayer, onBlindSettings, loading }) => {
@@ -19,28 +18,6 @@ const GameInfo = ({ game, players = [], onAddPlayer, onBlindSettings, loading })
 
   return (
     <div className="game-info-container">
-      <div className="game-info-card">
-        <div className="game-info-icon">
-          <Users size={20} color="white" />
-        </div>
-        <div className="game-info-content">
-          <div className="game-info-label">Active Players</div>
-          <div className="game-info-value">{activePlayers}/{players.length}</div>
-        </div>
-      </div>
-
-      <div className="game-round-info">
-        <div className="game-round-icon">
-          <Clock size={20} color="white" />
-        </div>
-        <div className="game-round-content">
-          <div className="game-round-value">{getRoundDisplay(game?.currentRound || 'preflop')}</div>
-          {game?.handNumber && (
-            <div className="game-hand-number">Hand #{game.handNumber}</div>
-          )}
-        </div>
-      </div>
-
       {/* 桌子控制按钮 */}
       <div className="game-table-table-controls">
         <button 
@@ -60,8 +37,6 @@ const GameInfo = ({ game, players = [], onAddPlayer, onBlindSettings, loading })
           ⚙
         </button>
       </div>
-
-      <GameStatusDisplay game={game} players={players} />
     </div>
   );
 };

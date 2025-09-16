@@ -213,7 +213,7 @@ const GameTable = () => {
         }
         
         setGameFlowMessage(message);
-        setShowGameFlowNotification(true);
+        // setShowGameFlowNotification(true);
       }
     } catch (err) {
       console.error('Failed to make player action:', err);

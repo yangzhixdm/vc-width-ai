@@ -104,8 +104,8 @@
 }
 
 .game-table-control-button {
-  width: 50px;
-  height: 50px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   border: none;
   cursor: pointer;
@@ -128,11 +128,6 @@
   background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
   color: white;
   box-shadow: 0 4px 15px rgba(255, 152, 0, 0.4);
-}
-
-.game-table-control-button:hover {
-  transform: translateY(-2px) scale(1.05);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
 }
 
 .game-table-control-button:disabled {
