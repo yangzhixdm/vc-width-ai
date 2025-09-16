@@ -14,10 +14,9 @@
   transform: translate(-50%, -50%) scale(1.1);
   filter: drop-shadow(0 0 10px rgba(74, 158, 255, 0.8));
   box-shadow: 0 0 20px rgba(231, 76, 60, 0.5);
-  border: 2px solid red;
   border-radius: 10px;
   padding: 5px;
-  background: #ff00006b;
+  background: #4a2c2c6b;
 }
 
 .player-seat-avatar {
@@ -27,7 +26,7 @@
   background: linear-gradient(135deg, #4a9eff 0%, #357abd 100%);
   background-size: cover;
   background-position: center;
-  border: 3px solid #2d7a5f;
+  border: 2px solid #2d7a5f;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -90,9 +89,9 @@
 
 .player-seat-bet {
   position: absolute;
-  top: -10px;
-  right: -10px;
-  background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%);
+  top: -16px;
+  right: -18px;
+  background: linear-gradient(231deg, #af4c4c 0%, #8e8238 100%);
   color: white;
   border-radius: 50%;
   width: 30px;

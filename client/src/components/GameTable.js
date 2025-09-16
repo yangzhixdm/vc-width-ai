@@ -14,6 +14,7 @@ import BlindSettingsDialog from './BlindSettingsDialog';
 import RaiseAmountDialog from './RaiseAmountDialog';
 import GameFlowNotification from './GameFlowNotification';
 import ChipAnimation from './ChipAnimation';
+import PotDisplay from './PotDisplay';
 import './GameTable.css';
 
 const GameTable = () => {
@@ -161,8 +162,8 @@ const GameTable = () => {
     const myPlayerIndex = myPlayerId ? gameState.players.findIndex(p => p.id === myPlayerId) : -1;
     const playerPosition = getAdjustedPlayerPosition(playerIndex, gameState.players.length, myPlayerIndex);
 
-    // 底池位置（桌子中心）
-    const potPosition = { x: 400, y: 300 }; // 桌子中心位置
+    // 底池位置（桌子中心，稍微偏上一点）
+    const potPosition = { x: 400, y: 280 }; // 桌子中心位置，稍微偏上
 
     // 创建动画对象
     const animationId = Date.now() + Math.random();
@@ -575,8 +576,10 @@ const GameTable = () => {
 
         <div className="game-table-center-area">
           <CommunityCards cards={game?.communityCards || []} />
-          <div className="game-table-pot-display">${game?.currentPot || 0}</div>
-          <div className="game-table-round-display">{game?.currentRound || 'preflop'}</div>
+          <PotDisplay 
+            potAmount={game?.currentPot || 0} 
+            currentRound={game?.currentRound || 'preflop'} 
+          />
         </div>
 
         {/* 筹码动画 */}
