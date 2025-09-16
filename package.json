@@ -19,7 +19,13 @@
     "type": "git",
     "url": "git+https://github.com/yangzhixdm/vc-width-ai.git"
   },
-  "keywords": ["poker", "ai", "texas-holdem", "llm", "gaming"],
+  "keywords": [
+    "poker",
+    "ai",
+    "texas-holdem",
+    "llm",
+    "gaming"
+  ],
   "author": "",
   "license": "ISC",
   "bugs": {
@@ -28,5 +34,9 @@
   "homepage": "https://github.com/yangzhixdm/vc-width-ai#readme",
   "devDependencies": {
     "concurrently": "^8.2.2"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "node-fetch": "^2.7.0"
   }
 }
