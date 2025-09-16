@@ -1,5 +1,6 @@
 const GameService = require('../services/GameService');
 const AIService = require('../services/AIService');
+const { BehaviorProfile } = require('../models');
 
 class GameController {
   // Create a new game
@@ -339,6 +340,96 @@ class GameController {
       };
     } catch (error) {
       ctx.status = 400;
+      ctx.body = {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+
+  // Get player behavior profile
+  async getPlayerBehaviorProfile(ctx) {
+    try {
+      const { playerId } = ctx.params;
+      
+      const profile = await BehaviorProfile.findOne({
+        where: { playerId }
+      });
+      
+      if (!profile) {
+        ctx.status = 404;
+        ctx.body = {
+          success: false,
+          error: 'Behavior profile not found'
+        };
+        return;
+      }
+      
+      ctx.body = {
+        success: true,
+        data: profile
+      };
+    } catch (error) {
+      ctx.status = 500;
+      ctx.body = {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+
+  // Get all behavior profiles for a game
+  async getGameBehaviorProfiles(ctx) {
+    try {
+      const { gameId } = ctx.params;
+      
+      // Get all players in the game
+      const gameState = await GameService.getGameState(gameId);
+      const playerIds = gameState.players.map(p => p.id);
+      
+      // Get behavior profiles for all players
+      const profiles = await BehaviorProfile.findAll({
+        where: {
+          playerId: playerIds
+        }
+      });
+      
+      ctx.body = {
+        success: true,
+        data: profiles
+      };
+    } catch (error) {
+      ctx.status = 500;
+      ctx.body = {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+
+  // Update behavior profile manually (for testing)
+  async updateBehaviorProfile(ctx) {
+    try {
+      const { playerId } = ctx.params;
+      const { actions } = ctx.request.body;
+      
+      if (!actions || !Array.isArray(actions)) {
+        ctx.status = 400;
+        ctx.body = {
+          success: false,
+          error: 'Actions array is required'
+        };
+        return;
+      }
+      
+      await AIService.updateBehaviorProfile(playerId, actions);
+      
+      ctx.body = {
+        success: true,
+        message: 'Behavior profile updated successfully'
+      };
+    } catch (error) {
+      ctx.status = 500;
       ctx.body = {
         success: false,
         error: error.message

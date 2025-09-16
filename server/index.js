@@ -5,7 +5,7 @@ const cors = require('koa-cors');
 const { syncDatabase } = require('./models');
 
 // Import routes
-const gameRoutes = require('./routes/game');
+const gameRoutes = require('./routes/router');
 
 const app = new Koa();
 const router = new Router();

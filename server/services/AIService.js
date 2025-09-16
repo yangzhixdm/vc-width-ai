@@ -397,17 +397,59 @@ Provide your recommendation as a JSON object with:
 
   // Calculate new behavior statistics
   calculateNewProfile(actions) {
+    if (!actions || actions.length === 0) {
+      return this.getDefaultBehaviorProfile();
+    }
+
     const totalHands = actions.length;
+    
+    // VPIP: Voluntarily Put $ In Pot (any action except fold)
     const vpipHands = actions.filter(a => a.actionType !== 'fold').length;
-    const pfrHands = actions.filter(a => a.actionType === 'raise').length;
-    const aggressiveActions = actions.filter(a => ['raise', 'call'].includes(a.actionType)).length;
-    const passiveActions = actions.filter(a => ['check', 'fold'].includes(a.actionType)).length;
+    
+    // PFR: Pre-Flop Raise (raise actions in preflop)
+    const pfrHands = actions.filter(a => 
+      a.actionType === 'raise' && a.round === 'preflop'
+    ).length;
+    
+    // Aggression Factor: (Bets + Raises) / (Calls + Checks)
+    const aggressiveActions = actions.filter(a => 
+      ['raise', 'all-in'].includes(a.actionType)
+    ).length;
+    const passiveActions = actions.filter(a => 
+      ['call', 'check'].includes(a.actionType)
+    ).length;
+    
+    // Fold to C-bet: fold actions after opponent raises
+    const foldToCbetHands = actions.filter(a => 
+      a.actionType === 'fold' && a.round !== 'preflop'
+    ).length;
+    
+    // C-bet frequency: continuation bets (raises after preflop)
+    const cbetHands = actions.filter(a => 
+      a.actionType === 'raise' && a.round !== 'preflop'
+    ).length;
+    
+    // 3-bet frequency: re-raises
+    const threeBetHands = actions.filter(a => 
+      a.actionType === 'raise' && a.amount > 0
+    ).length;
+    
+    // Steal attempts: raises from late position (cutoff, button)
+    const stealAttempts = actions.filter(a => 
+      a.actionType === 'raise' && 
+      (a.position >= 5) // Assuming late positions are 5+
+    ).length;
 
     return {
       vpip: totalHands > 0 ? (vpipHands / totalHands) * 100 : 0,
       pfr: totalHands > 0 ? (pfrHands / totalHands) * 100 : 0,
       aggressionFactor: passiveActions > 0 ? aggressiveActions / passiveActions : 0,
-      totalHands: totalHands
+      foldToCbet: totalHands > 0 ? (foldToCbetHands / totalHands) * 100 : 0,
+      cbetFrequency: totalHands > 0 ? (cbetHands / totalHands) * 100 : 0,
+      threeBetFrequency: totalHands > 0 ? (threeBetHands / totalHands) * 100 : 0,
+      stealAttempts: totalHands > 0 ? (stealAttempts / totalHands) * 100 : 0,
+      totalHands: totalHands,
+      lastUpdated: new Date()
     };
   }
 }

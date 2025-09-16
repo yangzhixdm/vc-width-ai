@@ -34,4 +34,9 @@ router.post('/:gameId/current-player', GameController.setCurrentPlayer);
 // Player management routes
 router.put('/:gameId/players/:playerId/chips', GameController.updatePlayerChips);
 
+// Behavior analysis routes
+router.get('/:gameId/behavior-profiles', GameController.getGameBehaviorProfiles);
+router.get('/players/:playerId/behavior-profile', GameController.getPlayerBehaviorProfile);
+router.post('/players/:playerId/behavior-profile', GameController.updateBehaviorProfile);
+
 module.exports = router;

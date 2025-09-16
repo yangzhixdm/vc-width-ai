@@ -1,5 +1,6 @@
 const { Game, Player, Action } = require('../models');
 const { v4: uuidv4 } = require('uuid');
+const AIService = require('./AIService');
 
 class GameService {
   constructor() {
@@ -806,6 +807,9 @@ class GameService {
 
     const activePlayers = game.players.filter(p => !p.isFolded && p.isActive);
     
+    // Update behavior profiles for all players after hand completion
+    await this.updatePlayerBehaviorProfiles(gameId);
+    
     if (activePlayers.length === 1) {
       // Only one player left, they win
       const winner = activePlayers[0];
@@ -1048,6 +1052,37 @@ class GameService {
     
     // Update dealer position in game
     await game.update({ dealerPosition: nextDealerIndex });
+  }
+
+  // Update behavior profiles for all players in the game
+  async updatePlayerBehaviorProfiles(gameId) {
+    try {
+      const players = await Player.findAll({ where: { gameId } });
+      
+      for (const player of players) {
+        // Get all actions for this player in this hand
+        const actions = await Action.findAll({
+          where: {
+            gameId,
+            playerId: player.playerId,
+            handNumber: await this.getCurrentHandNumber(gameId)
+          },
+          order: [['createdAt', 'ASC']]
+        });
+        
+        if (actions.length > 0) {
+          await AIService.updateBehaviorProfile(player.playerId, actions);
+        }
+      }
+    } catch (error) {
+      console.error('Error updating behavior profiles:', error);
+    }
+  }
+
+  // Get current hand number for the game
+  async getCurrentHandNumber(gameId) {
+    const game = await Game.findOne({ where: { gameId } });
+    return game ? game.handNumber : 1;
   }
 
   // Get game state for client
