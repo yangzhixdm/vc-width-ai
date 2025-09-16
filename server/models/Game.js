@@ -19,6 +19,10 @@ const Game = sequelize.define('Game', {
     type: DataTypes.INTEGER,
     defaultValue: 20
   },
+  name: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
   currentPot: {
     type: DataTypes.INTEGER,
     defaultValue: 0

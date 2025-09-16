@@ -51,7 +51,7 @@ class GameService {
     }
 
     // Set up positions and roles
-    await this.setupPositions(gameId, game.players);
+    await this.setupPositions(game, game.players);
 
     // Deal hole cards
     await this.dealHoleCards(gameId);
@@ -66,16 +66,17 @@ class GameService {
   }
 
   // Set up player positions and roles
-  async setupPositions(gameId, players) {
-    const positions = ['button', 'sb', 'bb', 'utg', 'utg+1', 'cutoff'];
+  async setupPositions(game, players) {
+    const positions = ['button', 'sb', 'bb', 'utg', 'utg+1', 'utg+2', 'cutoff'];
     
     for (let i = 0; i < players.length; i++) {
       const player = players[i];
-      const role = positions[i] || 'regular';
+      const role = positions[i] || 'unset';
       
       await player.update({
         position: i,
-        role: role
+        role: role,
+        game_name: game.name
       });
     }
   }
@@ -131,6 +132,47 @@ class GameService {
     return nextPlayer;
   }
 
+  // Get first player for new betting round (starts from small blind position)
+  async getFirstPlayerForNewRound(gameId) {
+    const game = await Game.findByPk(gameId, {
+      include: [{ model: Player, as: 'players' }]
+    });
+
+    if (!game) {
+      throw new Error('Game not found');
+    }
+
+    const activePlayers = game.players
+      .filter(p => p.isActive && !p.isFolded && p.chips > 0)
+      .sort((a, b) => a.position - b.position);
+
+    if (activePlayers.length === 0) {
+      return null;
+    }
+
+    // Find small blind player position
+    const sbPlayer = activePlayers.find(p => p.role === 'sb');
+    if (sbPlayer) {
+      // Start from small blind position and find first active player
+      const sbIndex = activePlayers.findIndex(p => p.id === sbPlayer.id);
+      
+      // Look for first active player starting from small blind position
+      for (let i = 0; i < activePlayers.length; i++) {
+        const playerIndex = (sbIndex + i) % activePlayers.length;
+        const player = activePlayers[playerIndex];
+        if (player.isActive && !player.isFolded && player.chips > 0) {
+          await game.update({ currentPlayerId: player.id });
+          return player;
+        }
+      }
+    }
+    
+    // If no small blind found or no active player found, start from first active player
+    const firstPlayer = activePlayers[0];
+    await game.update({ currentPlayerId: firstPlayer.id });
+    return firstPlayer;
+  }
+
   // Set current player
   async setCurrentPlayer(gameId, playerId) {
     const game = await Game.findByPk(gameId);
@@ -168,7 +210,7 @@ class GameService {
     }
   }
 
-  // Post small and big blinds
+  // Post small and big blinds,游戏开始前的初始行为, 小盲注和大盲注投注
   async postBlinds(gameId) {
     const players = await Player.findAll({ 
       where: { gameId, isActive: true },
@@ -177,30 +219,30 @@ class GameService {
 
     const sbPlayer = players.find(p => p.role === 'sb');
     const bbPlayer = players.find(p => p.role === 'bb');
+    
+    const game = await Game.findByPk(gameId);
 
     if (sbPlayer) {
       // 小盲注投注，但不标记为已行动（因为还需要等待其他玩家行动）
       await sbPlayer.update({
-        currentBet: 10,
-        chips: sbPlayer.chips - 10
+        currentBet: game.smallBlind,
+        chips: sbPlayer.chips - game.smallBlind
       });
     }
 
     if (bbPlayer) {
-      // 大盲注投注，标记为已行动（因为已经行动过了）
+      // 大盲注投注，但不标记为已行动（因为还需要等待其他玩家行动）
       await bbPlayer.update({
-        currentBet: 20,
-        chips: bbPlayer.chips - 20,
-        hasActedThisRound: true
+        currentBet: game.bigBlind,
+        chips: bbPlayer.chips - game.bigBlind
       });
     }
 
     // 更新奖池和当前下注
-    const game = await Game.findByPk(gameId);
-    const totalBlinds = (sbPlayer ? 10 : 0) + (bbPlayer ? 20 : 0);
+    const totalBlinds = (sbPlayer ? game.smallBlind : 0) + (bbPlayer ? game.bigBlind : 0);
     await game.update({ 
       currentPot: totalBlinds,
-      currentBet: 20  // 设置当前下注为大盲注金额
+      currentBet: game.bigBlind  // 设置当前下注为大盲注金额, 初始为大盲注金额, 后续会根据玩家下注情况更新
     });
 
     // 设置第一个行动的玩家（BB之后的那一位）
@@ -292,9 +334,9 @@ class GameService {
       // Advance to next round
       nextRound = await this.advanceToNextRound(gameId);
       
-      // If not showdown, get first player for next round
+      // If not showdown, get first player for next round (starts from small blind)
       if (nextRound !== 'showdown') {
-        nextPlayer = await this.getNextPlayer(gameId);
+        nextPlayer = await this.getFirstPlayerForNewRound(gameId);
       }
     } else {
       // Get next player in current round
@@ -400,12 +442,13 @@ class GameService {
         nextRound = 'showdown';
         // Handle showdown after river
         await this.handleShowdown(gameId);
-        break;
+        // Don't update game state here as handleShowdown already sets status to 'completed'
+        return nextRound;
       default:
         nextRound = 'showdown';
     }
 
-    // Update game
+    // Update game (only for non-showdown rounds)
     await game.update({ 
       currentRound: nextRound,
       currentBet: 0

@@ -28,12 +28,12 @@ const Player = sequelize.define('Player', {
     allowNull: false
   },
   role: {
-    type: DataTypes.ENUM('sb', 'bb', 'utg', 'utg+1', 'cutoff', 'button', 'regular'),
-    defaultValue: 'regular'
+    type: DataTypes.ENUM('sb', 'bb', 'utg', 'utg+1', 'utg+2', 'cutoff', 'button', 'unset'),
+    defaultValue: 'unset'
   },
   chips: {
     type: DataTypes.INTEGER,
-    defaultValue: 1000
+    defaultValue: 2000
   },
   currentBet: {
     type: DataTypes.INTEGER,
