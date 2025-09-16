@@ -55,6 +55,15 @@
   color: #f4e4bc;
   font-size: 16px;
   font-weight: 600;
+  display: flex;
+  flex-direction: column;
+}
+
+.game-status-hand-number {
+  color: #d4c4a8;
+  font-size: 12px;
+  font-weight: 500;
+  margin-top: 2px;
 }
 
 /* Responsive design */

@@ -51,6 +51,10 @@ const Game = sequelize.define('Game', {
     type: DataTypes.UUID,
     allowNull: true
   },
+  handNumber: {
+    type: DataTypes.INTEGER,
+    defaultValue: 1
+  },
   createdAt: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW

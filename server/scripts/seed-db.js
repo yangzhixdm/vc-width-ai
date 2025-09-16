@@ -72,6 +72,7 @@ async function seedDatabase() {
     const actions = await Promise.all([
       Action.create({
         gameId: game.id,
+        handNumber: game.handNumber,
         playerId: players[1].id, // sb player
         round: 'preflop',
         actionType: 'call',
@@ -81,6 +82,7 @@ async function seedDatabase() {
       }),
       Action.create({
         gameId: game.id,
+        handNumber: game.handNumber,
         playerId: players[2].id, // bb player
         round: 'preflop',
         actionType: 'call',

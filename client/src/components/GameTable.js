@@ -241,21 +241,27 @@ const GameTable = ({ gameId, onGameEnd }) => {
       if (result.roundComplete && result.nextRound) {
         console.log('Round completed! Next round:', result.nextRound);
         let message = '';
-        switch (result.nextRound) {
-          case 'flop':
-            message = '翻牌阶段开始！发3张公共牌';
-            break;
-          case 'turn':
-            message = '转牌阶段开始！发第4张公共牌';
-            break;
-          case 'river':
-            message = '河牌阶段开始！发第5张公共牌';
-            break;
-          case 'showdown':
-            message = '摊牌阶段！比较手牌确定获胜者';
-            break;
-          default:
-            message = `进入${result.nextRound}阶段`;
+        
+        // Check if game continued to next hand
+        if (result.gameContinued && result.handNumber) {
+          message = `第${result.handNumber}手开始！新的一轮游戏`;
+        } else {
+          switch (result.nextRound) {
+            case 'flop':
+              message = '翻牌阶段开始！发3张公共牌';
+              break;
+            case 'turn':
+              message = '转牌阶段开始！发第4张公共牌';
+              break;
+            case 'river':
+              message = '河牌阶段开始！发第5张公共牌';
+              break;
+            case 'showdown':
+              message = '摊牌阶段！比较手牌确定获胜者';
+              break;
+            default:
+              message = `进入${result.nextRound}阶段`;
+          }
         }
         
         setGameFlowMessage(message);

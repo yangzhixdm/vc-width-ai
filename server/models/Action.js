@@ -15,6 +15,11 @@ const Action = sequelize.define('Action', {
       key: 'id'
     }
   },
+  handNumber: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    comment: '手牌编号，用于标识同一局游戏中的不同手牌'
+  },
   playerId: {
     type: DataTypes.UUID,
     allowNull: false,

@@ -69,9 +69,13 @@ class GameService {
   async setupPositions(game, players) {
     const positions = ['button', 'sb', 'bb', 'utg', 'utg+1', 'utg+2', 'cutoff'];
     
+    // Start from dealer position
+    const dealerPosition = game.dealerPosition || 0;
+    
     for (let i = 0; i < players.length; i++) {
       const player = players[i];
-      const role = positions[i] || 'unset';
+      const roleIndex = (i + dealerPosition) % players.length;
+      const role = positions[roleIndex] || 'unset';
       
       await player.update({
         position: i,
@@ -315,6 +319,7 @@ class GameService {
     // Record action
     const action = await Action.create({
       gameId,
+      handNumber: game.handNumber,
       playerId,
       round: round || game.currentRound,
       actionType,
@@ -329,14 +334,28 @@ class GameService {
     const isRoundComplete = await this.isBettingRoundComplete(gameId);
     let nextRound = null;
     let nextPlayer = null;
+    let gameContinued = false;
+    let handNumber = game.handNumber;
 
     if (isRoundComplete) {
       // Advance to next round
-      nextRound = await this.advanceToNextRound(gameId);
+      const advanceResult = await this.advanceToNextRound(gameId);
       
-      // If not showdown, get first player for next round (starts from small blind)
-      if (nextRound !== 'showdown') {
-        nextPlayer = await this.getFirstPlayerForNewRound(gameId);
+      // Handle different return types
+      if (typeof advanceResult === 'object' && advanceResult.round) {
+        // Showdown case - returns { round, showdownResult }
+        nextRound = advanceResult.round;
+        if (advanceResult.showdownResult) {
+          gameContinued = advanceResult.showdownResult.gameContinued || false;
+          handNumber = advanceResult.showdownResult.handNumber || game.handNumber;
+        }
+      } else {
+        // Regular round advancement
+        nextRound = advanceResult;
+        // If not showdown, get first player for next round (starts from small blind)
+        if (nextRound !== 'showdown') {
+          nextPlayer = await this.getFirstPlayerForNewRound(gameId);
+        }
       }
     } else {
       // Get next player in current round
@@ -351,7 +370,9 @@ class GameService {
         isHuman: nextPlayer.isHuman
       } : null,
       roundComplete: isRoundComplete,
-      nextRound: nextRound
+      nextRound: nextRound,
+      gameContinued: gameContinued,
+      handNumber: handNumber
     };
   }
 
@@ -441,9 +462,9 @@ class GameService {
       case 'river':
         nextRound = 'showdown';
         // Handle showdown after river
-        await this.handleShowdown(gameId);
-        // Don't update game state here as handleShowdown already sets status to 'completed'
-        return nextRound;
+        const showdownResult = await this.handleShowdown(gameId);
+        // Return the showdown result along with the round
+        return { round: nextRound, showdownResult };
       default:
         nextRound = 'showdown';
     }
@@ -783,12 +804,32 @@ class GameService {
       // Only one player left, they win
       const winner = activePlayers[0];
       await this.distributePot(gameId, [winner]);
-      await game.update({ 
-        status: 'completed',
-        winner: winner.id,
-        currentRound: 'showdown'
-      });
-      return { winner, pot: game.currentPot };
+      
+      // Check if game should continue or end
+      const shouldContinue = await this.shouldGameContinue(gameId);
+      if (shouldContinue) {
+        // Start next hand
+        await this.startNextHand(gameId);
+        return { 
+          winner, 
+          pot: game.currentPot, 
+          gameContinued: true,
+          handNumber: game.handNumber + 1
+        };
+      } else {
+        // End the game
+        await game.update({ 
+          status: 'completed',
+          winner: winner.id,
+          currentRound: 'showdown'
+        });
+        return { 
+          winner, 
+          pot: game.currentPot, 
+          gameContinued: false,
+          gameEnded: true
+        };
+      }
     }
 
     // Multiple players, need to compare hands
@@ -796,13 +837,34 @@ class GameService {
     const winner = handEvaluations[0]; // Highest hand wins
 
     await this.distributePot(gameId, [winner]);
-    await game.update({ 
-      status: 'completed',
-      winner: winner.id,
-      currentRound: 'showdown'
-    });
-
-    return { winner, pot: game.currentPot, handEvaluations };
+    
+    // Check if game should continue or end
+    const shouldContinue = await this.shouldGameContinue(gameId);
+    if (shouldContinue) {
+      // Start next hand
+      await this.startNextHand(gameId);
+      return { 
+        winner, 
+        pot: game.currentPot, 
+        handEvaluations,
+        gameContinued: true,
+        handNumber: game.handNumber + 1
+      };
+    } else {
+      // End the game
+      await game.update({ 
+        status: 'completed',
+        winner: winner.id,
+        currentRound: 'showdown'
+      });
+      return { 
+        winner, 
+        pot: game.currentPot, 
+        handEvaluations,
+        gameContinued: false,
+        gameEnded: true
+      };
+    }
   }
 
   // Evaluate all player hands
@@ -899,6 +961,88 @@ class GameService {
     return false;
   }
 
+  // Check if game should continue to next hand
+  async shouldGameContinue(gameId) {
+    const players = await Player.findAll({ 
+      where: { gameId, isActive: true }
+    });
+
+    const playersWithChips = players.filter(p => p.chips > 0);
+    
+    // Continue if at least 2 players have chips
+    return playersWithChips.length >= 2;
+  }
+
+  // Start the next hand after showdown
+  async startNextHand(gameId) {
+    const game = await Game.findByPk(gameId, {
+      include: [{ model: Player, as: 'players' }]
+    });
+
+    if (!game) {
+      throw new Error('Game not found');
+    }
+
+    // Increment hand number
+    const newHandNumber = game.handNumber + 1;
+
+    // Reset game state for next hand
+    await game.update({
+      status: 'active', // Keep game active
+      currentPot: 0,
+      currentBet: 0,
+      currentRound: 'preflop',
+      communityCards: [],
+      winner: null,
+      handNumber: newHandNumber
+    });
+
+    // Reset all players for next hand
+    await Promise.all(game.players.map(player => 
+      player.update({
+        currentBet: 0,
+        holeCards: [],
+        isFolded: false,
+        isAllIn: false,
+        hasActedThisRound: false,
+        isActive: player.chips > 0 // Only keep active if they have chips
+      })
+    ));
+
+    // Move dealer button and setup positions for next hand
+    const playersWithChips = game.players.filter(p => p.chips > 0);
+    if (playersWithChips.length > 1) {
+      await this.rotateDealerButton(gameId, playersWithChips);
+      await this.setupPositions(game, playersWithChips);
+      
+      // Post blinds for next hand
+      await this.postBlinds(gameId);
+      
+      // Deal new hole cards
+      await this.dealHoleCards(gameId);
+    }
+
+    return {
+      handNumber: newHandNumber,
+      activePlayers: playersWithChips.length
+    };
+  }
+
+  // Rotate dealer button to next player
+  async rotateDealerButton(gameId, players) {
+    const game = await Game.findByPk(gameId);
+    if (!game) {
+      throw new Error('Game not found');
+    }
+
+    // Find current dealer position
+    const currentDealerIndex = players.findIndex(p => p.role === 'button');
+    const nextDealerIndex = (currentDealerIndex + 1) % players.length;
+    
+    // Update dealer position in game
+    await game.update({ dealerPosition: nextDealerIndex });
+  }
+
   // Get game state for client
   async getGameState(gameId) {
     const game = await Game.findByPk(gameId, {
@@ -928,7 +1072,8 @@ class GameService {
         dealerPosition: game.dealerPosition,
         communityCards: game.communityCards,
         winner: game.winner,
-        currentPlayerId: game.currentPlayerId
+        currentPlayerId: game.currentPlayerId,
+        handNumber: game.handNumber
       },
       players: game.players
         .map(player => ({

@@ -52,6 +52,9 @@ const GameStatusDisplay = ({ game, players = [] }) => {
           <div className="game-status-label">当前阶段</div>
           <div className="game-status-value">
             {getRoundDisplay(game?.currentRound || 'preflop')}
+            {game?.handNumber && (
+              <div className="game-status-hand-number">第{game.handNumber}手</div>
+            )}
           </div>
         </div>
       </div>

@@ -74,12 +74,24 @@
   box-shadow: 0 2px 8px rgba(255, 152, 0, 0.3);
 }
 
+.game-round-content {
+  display: flex;
+  flex-direction: column;
+}
+
 .game-round-value {
   color: #f4e4bc;
   font-size: 16px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 1px;
+}
+
+.game-hand-number {
+  color: #d4c4a8;
+  font-size: 12px;
+  font-weight: 500;
+  margin-top: 2px;
 }
 
 /* 桌子控制按钮样式 */

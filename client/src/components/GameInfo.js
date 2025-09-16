@@ -32,7 +32,12 @@ const GameInfo = ({ game, players = [], onAddPlayer, onBlindSettings, loading })
         <div className="game-round-icon">
           <Clock size={20} color="white" />
         </div>
-        <div className="game-round-value">{getRoundDisplay(game?.currentRound || 'preflop')}</div>
+        <div className="game-round-content">
+          <div className="game-round-value">{getRoundDisplay(game?.currentRound || 'preflop')}</div>
+          {game?.handNumber && (
+            <div className="game-hand-number">Hand #{game.handNumber}</div>
+          )}
+        </div>
       </div>
 
       {/* 桌子控制按钮 */}
