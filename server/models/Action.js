@@ -3,16 +3,21 @@ const sequelize = require('../config/database');
 
 const Action = sequelize.define('Action', {
   id: {
+    type: DataTypes.INTEGER,
+    autoIncrement: true,
+    primaryKey: true
+  },
+  actionId: {
     type: DataTypes.UUID,
     defaultValue: DataTypes.UUIDV4,
-    primaryKey: true
+    unique: true
   },
   gameId: {
     type: DataTypes.UUID,
     allowNull: false,
     references: {
       model: 'games',
-      key: 'id'
+      key: 'gameId'
     }
   },
   handNumber: {
@@ -25,7 +30,7 @@ const Action = sequelize.define('Action', {
     allowNull: false,
     references: {
       model: 'players',
-      key: 'id'
+      key: 'playerId'
     }
   },
   round: {

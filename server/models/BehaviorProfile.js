@@ -3,16 +3,21 @@ const sequelize = require('../config/database');
 
 const BehaviorProfile = sequelize.define('BehaviorProfile', {
   id: {
+    type: DataTypes.INTEGER,
+    autoIncrement: true,
+    primaryKey: true
+  },
+  behaviorProfileId: {
     type: DataTypes.UUID,
     defaultValue: DataTypes.UUIDV4,
-    primaryKey: true
+    unique: true
   },
   playerId: {
     type: DataTypes.UUID,
     allowNull: false,
     references: {
       model: 'players',
-      key: 'id'
+      key: 'playerId'
     }
   },
   vpip: {

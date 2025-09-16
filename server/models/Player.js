@@ -3,16 +3,21 @@ const sequelize = require('../config/database');
 
 const Player = sequelize.define('Player', {
   id: {
+    type: DataTypes.INTEGER,
+    autoIncrement: true,
+    primaryKey: true
+  },
+  playerId: {
     type: DataTypes.UUID,
     defaultValue: DataTypes.UUIDV4,
-    primaryKey: true
+    unique: true
   },
   gameId: {
     type: DataTypes.UUID,
     allowNull: false,
     references: {
       model: 'games',
-      key: 'id'
+      key: 'gameId'
     }
   },
   name: {

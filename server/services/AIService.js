@@ -103,10 +103,10 @@ class AIService {
     const profiles = [];
     for (const player of players) {
       const profile = player.behaviorProfile || this.getDefaultBehaviorProfile();
-      const playerStats = await this.calculatePlayerStats(player.id);
+      const playerStats = await this.calculatePlayerStats(player.playerId);
       
       profiles.push({
-        playerId: player.id,
+        playerId: player.playerId,
         playerName: player.name,
         position: player.position,
         role: player.role,

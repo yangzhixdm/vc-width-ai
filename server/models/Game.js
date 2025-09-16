@@ -3,9 +3,14 @@ const sequelize = require('../config/database');
 
 const Game = sequelize.define('Game', {
   id: {
+    type: DataTypes.INTEGER,
+    autoIncrement: true,
+    primaryKey: true
+  },
+  gameId: {
     type: DataTypes.UUID,
     defaultValue: DataTypes.UUIDV4,
-    primaryKey: true
+    unique: true
   },
   status: {
     type: DataTypes.ENUM('waiting', 'active', 'completed', 'cancelled'),

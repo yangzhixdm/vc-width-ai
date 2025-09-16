@@ -19,7 +19,7 @@ class GameService {
 
   // Add player to game
   async addPlayer(gameId, playerData) {
-    const game = await Game.findByPk(gameId);
+    const game = await Game.findOne({ where: { gameId } });
     if (!game) {
       throw new Error('Game not found');
     }
@@ -38,7 +38,8 @@ class GameService {
 
   // Start the game
   async startGame(gameId) {
-    const game = await Game.findByPk(gameId, {
+    const game = await Game.findOne({ 
+      where: { gameId },
       include: [{ model: Player, as: 'players' }]
     });
 
@@ -87,7 +88,8 @@ class GameService {
 
   // Get next player to act
   async getNextPlayer(gameId) {
-    const game = await Game.findByPk(gameId, {
+    const game = await Game.findOne({ 
+      where: { gameId },
       include: [{ model: Player, as: 'players' }]
     });
 
@@ -107,38 +109,39 @@ class GameService {
     if (!game.currentPlayerId) {
       const bbPlayer = activePlayers.find(p => p.role === 'bb');
       if (bbPlayer) {
-        const bbIndex = activePlayers.findIndex(p => p.id === bbPlayer.id);
+        const bbIndex = activePlayers.findIndex(p => p.playerId === bbPlayer.playerId);
         const nextPlayerIndex = (bbIndex + 1) % activePlayers.length;
         const firstPlayer = activePlayers[nextPlayerIndex];
-        await game.update({ currentPlayerId: firstPlayer.id });
+        await game.update({ currentPlayerId: firstPlayer.playerId });
         return firstPlayer;
       } else {
         // Fallback to first player if no BB found
         const firstPlayer = activePlayers[0];
-        await game.update({ currentPlayerId: firstPlayer.id });
+        await game.update({ currentPlayerId: firstPlayer.playerId });
         return firstPlayer;
       }
     }
 
     // Find current player index
-    const currentIndex = activePlayers.findIndex(p => p.id === game.currentPlayerId);
+    const currentIndex = activePlayers.findIndex(p => p.playerId === game.currentPlayerId);
     
     // If current player not found or is last, start from beginning
     if (currentIndex === -1 || currentIndex === activePlayers.length - 1) {
       const nextPlayer = activePlayers[0];
-      await game.update({ currentPlayerId: nextPlayer.id });
+      await game.update({ currentPlayerId: nextPlayer.playerId });
       return nextPlayer;
     }
 
     // Move to next player
     const nextPlayer = activePlayers[currentIndex + 1];
-    await game.update({ currentPlayerId: nextPlayer.id });
+    await game.update({ currentPlayerId: nextPlayer.playerId });
     return nextPlayer;
   }
 
   // Get first player for new betting round (starts from small blind position)
   async getFirstPlayerForNewRound(gameId) {
-    const game = await Game.findByPk(gameId, {
+    const game = await Game.findOne({ 
+      where: { gameId },
       include: [{ model: Player, as: 'players' }]
     });
 
@@ -158,14 +161,14 @@ class GameService {
     const sbPlayer = activePlayers.find(p => p.role === 'sb');
     if (sbPlayer) {
       // Start from small blind position and find first active player
-      const sbIndex = activePlayers.findIndex(p => p.id === sbPlayer.id);
+      const sbIndex = activePlayers.findIndex(p => p.playerId === sbPlayer.playerId);
       
       // Look for first active player starting from small blind position
       for (let i = 0; i < activePlayers.length; i++) {
         const playerIndex = (sbIndex + i) % activePlayers.length;
         const player = activePlayers[playerIndex];
         if (player.isActive && !player.isFolded && player.chips > 0) {
-          await game.update({ currentPlayerId: player.id });
+          await game.update({ currentPlayerId: player.playerId });
           return player;
         }
       }
@@ -173,13 +176,13 @@ class GameService {
     
     // If no small blind found or no active player found, start from first active player
     const firstPlayer = activePlayers[0];
-    await game.update({ currentPlayerId: firstPlayer.id });
+    await game.update({ currentPlayerId: firstPlayer.playerId });
     return firstPlayer;
   }
 
   // Set current player
   async setCurrentPlayer(gameId, playerId) {
-    const game = await Game.findByPk(gameId);
+    const game = await Game.findOne({ where: { gameId } });
     if (!game) {
       throw new Error('Game not found');
     }
@@ -191,7 +194,7 @@ class GameService {
   // Update player chips
   async updatePlayerChips(gameId, playerId, chips) {
     const player = await Player.findOne({
-      where: { id: playerId, gameId }
+      where: { playerId: playerId, gameId }
     });
 
     if (!player) {
@@ -252,20 +255,20 @@ class GameService {
     // 设置第一个行动的玩家（BB之后的那一位）
     if (bbPlayer) {
       // 找到BB玩家的位置，下一个玩家就是第一个行动的
-      const bbIndex = players.findIndex(p => p.id === bbPlayer.id);
+      const bbIndex = players.findIndex(p => p.playerId === bbPlayer.playerId);
       const nextPlayerIndex = (bbIndex + 1) % players.length;
       const firstToAct = players[nextPlayerIndex];
       
       if (firstToAct) {
-        await game.update({ currentPlayerId: firstToAct.id });
+        await game.update({ currentPlayerId: firstToAct.playerId });
       }
     }
   }
 
   // Make a player action
   async makeAction(gameId, playerId, actionType, amount = 0, round) {
-    const game = await Game.findByPk(gameId);
-    const player = await Player.findByPk(playerId);
+    const game = await Game.findOne({ where: { gameId } });
+    const player = await Player.findOne({ where: { playerId } });
 
     if (!game || !player) {
       throw new Error('Game or player not found');
@@ -365,7 +368,7 @@ class GameService {
     return {
       action,
       nextPlayer: nextPlayer ? {
-        id: nextPlayer.id,
+        id: nextPlayer.playerId,
         name: nextPlayer.name,
         isHuman: nextPlayer.isHuman
       } : null,
@@ -430,7 +433,7 @@ class GameService {
 
   // Advance to next betting round
   async advanceToNextRound(gameId) {
-    const game = await Game.findByPk(gameId);
+    const game = await Game.findOne({ where: { gameId } });
     if (!game) {
       throw new Error('Game not found');
     }
@@ -480,7 +483,7 @@ class GameService {
 
   // Deal community cards
   async dealCommunityCards(gameId, count) {
-    const game = await Game.findByPk(gameId);
+    const game = await Game.findOne({ where: { gameId } });
     if (!game) {
       throw new Error('Game not found');
     }
@@ -506,7 +509,7 @@ class GameService {
   // Get used cards from all players and community
   async getUsedCards(gameId) {
     const players = await Player.findAll({ where: { gameId } });
-    const game = await Game.findByPk(gameId);
+    const game = await Game.findOne({ where: { gameId } });
     
     const usedCards = [];
     
@@ -578,7 +581,7 @@ class GameService {
   // Set player hole cards
   async setPlayerHoleCards(gameId, playerId, holeCards) {
     const player = await Player.findOne({
-      where: { id: playerId, gameId }
+      where: { playerId: playerId, gameId }
     });
 
     if (!player) {
@@ -660,7 +663,7 @@ class GameService {
     });
 
     // Get community cards
-    const game = await Game.findByPk(gameId);
+    const game = await Game.findOne({ where: { gameId } });
     if (game && game.communityCards) {
       usedCards.push(...game.communityCards);
     }
@@ -670,7 +673,8 @@ class GameService {
 
   // Settle chips and determine winner
   async settleChips(gameId, winnerId) {
-    const game = await Game.findByPk(gameId, {
+    const game = await Game.findOne({ 
+      where: { gameId },
       include: [{ model: Player, as: 'players' }]
     });
 
@@ -682,7 +686,7 @@ class GameService {
       throw new Error('Game is not active');
     }
 
-    const winner = game.players.find(p => p.id === winnerId);
+    const winner = game.players.find(p => p.playerId === winnerId);
     if (!winner) {
       throw new Error('Winner not found');
     }
@@ -709,7 +713,7 @@ class GameService {
 
     return {
       winner: {
-        id: winner.id,
+        id: winner.playerId,
         name: winner.name,
         chipsWon: potAmount,
         newChipCount: winner.chips + potAmount
@@ -721,7 +725,8 @@ class GameService {
 
   // End current hand and prepare for next hand
   async endHand(gameId) {
-    const game = await Game.findByPk(gameId, {
+    const game = await Game.findOne({ 
+      where: { gameId },
       include: [{ model: Player, as: 'players' }]
     });
 
@@ -790,7 +795,8 @@ class GameService {
 
   // Handle showdown and determine winner
   async handleShowdown(gameId) {
-    const game = await Game.findByPk(gameId, {
+    const game = await Game.findOne({ 
+      where: { gameId },
       include: [{ model: Player, as: 'players' }]
     });
 
@@ -820,7 +826,7 @@ class GameService {
         // End the game
         await game.update({ 
           status: 'completed',
-          winner: winner.id,
+          winner: winner.playerId,
           currentRound: 'showdown'
         });
         return { 
@@ -854,7 +860,7 @@ class GameService {
       // End the game
       await game.update({ 
         status: 'completed',
-        winner: winner.id,
+        winner: winner.playerId,
         currentRound: 'showdown'
       });
       return { 
@@ -869,7 +875,7 @@ class GameService {
 
   // Evaluate all player hands
   async evaluateAllHands(gameId, players) {
-    const game = await Game.findByPk(gameId);
+    const game = await Game.findOne({ where: { gameId } });
     const communityCards = game.communityCards || [];
 
     const evaluations = players.map(player => {
@@ -920,7 +926,7 @@ class GameService {
 
   // Distribute pot to winner(s)
   async distributePot(gameId, winners) {
-    const game = await Game.findByPk(gameId);
+    const game = await Game.findOne({ where: { gameId } });
     const potPerWinner = Math.floor(game.currentPot / winners.length);
     const remainder = game.currentPot % winners.length;
 
@@ -952,7 +958,7 @@ class GameService {
         const game = await Game.findByPk(gameId);
         await game.update({ 
           status: 'completed',
-          winner: winner.id
+          winner: winner.playerId
         });
       }
       return true;
@@ -975,7 +981,8 @@ class GameService {
 
   // Start the next hand after showdown
   async startNextHand(gameId) {
-    const game = await Game.findByPk(gameId, {
+    const game = await Game.findOne({ 
+      where: { gameId },
       include: [{ model: Player, as: 'players' }]
     });
 
@@ -1030,7 +1037,7 @@ class GameService {
 
   // Rotate dealer button to next player
   async rotateDealerButton(gameId, players) {
-    const game = await Game.findByPk(gameId);
+    const game = await Game.findOne({ where: { gameId } });
     if (!game) {
       throw new Error('Game not found');
     }
@@ -1045,7 +1052,8 @@ class GameService {
 
   // Get game state for client
   async getGameState(gameId) {
-    const game = await Game.findByPk(gameId, {
+    const game = await Game.findOne({ 
+      where: { gameId },
       include: [
         { 
           model: Player, 
@@ -1062,7 +1070,7 @@ class GameService {
 
     return {
       game: {
-        id: game.id,
+        id: game.gameId,
         status: game.status,
         smallBlind: game.smallBlind,
         bigBlind: game.bigBlind,
@@ -1077,7 +1085,7 @@ class GameService {
       },
       players: game.players
         .map(player => ({
-          id: player.id,
+          id: player.playerId,
           name: player.name,
           avatar: player.avatar,
           position: player.position,
@@ -1091,7 +1099,7 @@ class GameService {
           isAllIn: player.isAllIn
         })),
       actions: game.actions.map(action => ({
-        id: action.id,
+        id: action.actionId,
         playerId: action.playerId,
         round: action.round,
         actionType: action.actionType,

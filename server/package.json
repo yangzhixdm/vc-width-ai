@@ -10,6 +10,8 @@
     "reset-db": "node scripts/reset-db.js",
     "seed-db": "node scripts/seed-db.js",
     "setup-db": "npm run init-db && npm run seed-db",
+    "migrate-ids": "node scripts/migrate-ids.js",
+    "rollback-ids": "node scripts/rollback-ids.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
