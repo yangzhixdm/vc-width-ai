@@ -218,8 +218,9 @@ class AIService {
   async getGameContext(gameId, playerId) {
     const { Game, Player } = require('../models');
     
-    const game = await Game.findByPk(gameId);
-    const player = await Player.findByPk(playerId);
+    const game = await Game.findOne({ where: { gameId } });
+    const player = await Game.findOne({ where: { playerId } });
+
     const allPlayers = await Player.findAll({ where: { gameId } });
 
     return {

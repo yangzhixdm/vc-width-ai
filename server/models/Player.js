@@ -48,6 +48,10 @@ const Player = sequelize.define('Player', {
     type: DataTypes.JSON,
     defaultValue: []
   },
+  hasActedThisRound: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false
+  },
   isActive: {
     type: DataTypes.BOOLEAN,
     defaultValue: true

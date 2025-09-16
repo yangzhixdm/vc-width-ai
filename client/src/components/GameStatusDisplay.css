@@ -21,11 +21,6 @@
   transition: all 0.3s ease;
 }
 
-.game-status-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
-}
-
 .game-status-icon {
   width: 40px;
   height: 40px;

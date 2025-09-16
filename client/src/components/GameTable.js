@@ -13,7 +13,6 @@ import AddPlayerDialog from './AddPlayerDialog';
 import BlindSettingsDialog from './BlindSettingsDialog';
 import RaiseAmountDialog from './RaiseAmountDialog';
 import GameFlowNotification from './GameFlowNotification';
-import GameStatusDisplay from './GameStatusDisplay';
 import './GameTable.css';
 
 const GameTable = () => {
@@ -76,10 +75,10 @@ const GameTable = () => {
       };
       
       loadGame();
-      const interval = setInterval(() => {
-        getGameStateRef.current(gameId);
-      }, 2000);
-      return () => clearInterval(interval);
+      // const interval = setInterval(() => {
+      //   getGameStateRef.current(gameId);
+      // }, 2000);
+      // return () => clearInterval(interval);
     }
   }, [gameId, navigate]); // 只依赖 gameId，避免无限循环
 
@@ -489,7 +488,6 @@ const GameTable = () => {
         loading={loading}
       />
       
-      <GameStatusDisplay game={game} players={players} />
       
       <div className="game-table">
         <div className="game-table-player-positions">
@@ -509,6 +507,7 @@ const GameTable = () => {
                 onSetAsMe={handleSetAsMe}
                 onSetPlayerHoleCards={handleSetPlayerHoleCards}
                 onPlayerAction={handlePlayerAction}
+                gameStatus={gameState?.game?.status}
               />
             );
           })}

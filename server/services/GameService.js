@@ -228,8 +228,8 @@ class GameService {
     const sbPlayer = players.find(p => p.role === 'sb');
     const bbPlayer = players.find(p => p.role === 'bb');
     
-    const game = await Game.findByPk(gameId);
-
+    const game = await Game.findOne({ where: { gameId } });
+    
     if (sbPlayer) {
       // 小盲注投注，但不标记为已行动（因为还需要等待其他玩家行动）
       await sbPlayer.update({
@@ -610,7 +610,8 @@ class GameService {
 
   // Set community cards manually
   async setCommunityCards(gameId, cards, round) {
-    const game = await Game.findByPk(gameId);
+    const game = await Game.findOne({ where: { gameId } });
+    
     if (!game) {
       throw new Error('Game not found');
     }
@@ -959,7 +960,7 @@ class GameService {
       if (playersWithChips.length === 1) {
         const winner = playersWithChips[0];
         await this.distributePot(gameId, [winner]);
-        const game = await Game.findByPk(gameId);
+        const game = await Game.findOne({ where: { gameId } });
         await game.update({ 
           status: 'completed',
           winner: winner.playerId

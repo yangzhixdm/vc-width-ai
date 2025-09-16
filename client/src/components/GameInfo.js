@@ -1,5 +1,6 @@
 import React from 'react';
 import { Users, Clock } from 'lucide-react';
+import GameStatusDisplay from './GameStatusDisplay';
 import './GameInfo.css';
 
 const GameInfo = ({ game, players = [], onAddPlayer, onBlindSettings, loading }) => {
@@ -59,6 +60,8 @@ const GameInfo = ({ game, players = [], onAddPlayer, onBlindSettings, loading })
           ⚙
         </button>
       </div>
+
+      <GameStatusDisplay game={game} players={players} />
     </div>
   );
 };

@@ -49,7 +49,6 @@ const GameStatusDisplay = ({ game, players = [] }) => {
           {getRoundIcon(game?.currentRound || 'preflop')}
         </div>
         <div className="game-status-content">
-          <div className="game-status-label">当前阶段</div>
           <div className="game-status-value">
             {getRoundDisplay(game?.currentRound || 'preflop')}
             {game?.handNumber && (
@@ -58,38 +57,6 @@ const GameStatusDisplay = ({ game, players = [] }) => {
           </div>
         </div>
       </div>
-
-      <div className="game-status-card">
-        <div className="game-status-icon" style={{ backgroundColor: '#4a9eff' }}>
-          <Users size={20} color="white" />
-        </div>
-        <div className="game-status-content">
-          <div className="game-status-label">活跃玩家</div>
-          <div className="game-status-value">{activePlayers}/{totalPlayers}</div>
-        </div>
-      </div>
-
-      <div className="game-status-card">
-        <div className="game-status-icon" style={{ backgroundColor: '#ff9800' }}>
-          <CreditCard size={20} color="white" />
-        </div>
-        <div className="game-status-content">
-          <div className="game-status-label">奖池</div>
-          <div className="game-status-value">${game?.currentPot || 0}</div>
-        </div>
-      </div>
-
-      {game?.currentBet > 0 && (
-        <div className="game-status-card">
-          <div className="game-status-icon" style={{ backgroundColor: '#e74c3c' }}>
-            <CreditCard size={20} color="white" />
-          </div>
-          <div className="game-status-content">
-            <div className="game-status-label">当前下注</div>
-            <div className="game-status-value">${game.currentBet}</div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

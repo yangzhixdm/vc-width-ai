@@ -12,7 +12,8 @@ const PlayerSeat = ({
   onGetAIRecommendation,
   onSetAsMe,
   onSetPlayerHoleCards,
-  onPlayerAction
+  onPlayerAction,
+  gameStatus
 }) => {
   const getStatusClass = () => {
     if (player.isFolded) return 'folded';
@@ -53,6 +54,31 @@ const PlayerSeat = ({
     if (onPlayerAction) {
       onPlayerAction(player, actionType);
     }
+  };
+
+  // 判断按钮是否应该禁用
+  const isButtonDisabled = () => {
+    // 如果游戏状态不是活跃状态，禁用所有按钮
+    if (gameStatus !== 'active') {
+      return true;
+    }
+    
+    // 如果玩家已经弃牌或全下，禁用所有按钮
+    if (player.isFolded || player.isAllIn) {
+      return true;
+    }
+    
+    // 如果玩家没有筹码，禁用所有按钮
+    if (player.chips <= 0) {
+      return true;
+    }
+    
+    // 如果玩家不是当前轮到操作的玩家，禁用所有按钮
+    if (!isCurrentPlayer) {
+      return true;
+    }
+    
+    return false;
   };
 
   return (
@@ -113,6 +139,7 @@ const PlayerSeat = ({
             className="player-seat-action-btn call"
             onClick={(e) => handleActionClick('call', e)}
             title="跟注"
+            disabled={isButtonDisabled()}
           >
             Call
           </button>
@@ -120,6 +147,7 @@ const PlayerSeat = ({
             className="player-seat-action-btn raise"
             onClick={(e) => handleActionClick('raise', e)}
             title="加注"
+            disabled={isButtonDisabled()}
           >
             Raise
           </button>
@@ -127,6 +155,7 @@ const PlayerSeat = ({
             className="player-seat-action-btn fold"
             onClick={(e) => handleActionClick('fold', e)}
             title="弃牌"
+            disabled={isButtonDisabled()}
           >
             Fold
           </button>
@@ -134,6 +163,7 @@ const PlayerSeat = ({
             className="player-seat-action-btn allin"
             onClick={(e) => handleActionClick('allin', e)}
             title="全下"
+            disabled={isButtonDisabled()}
           >
             All In
           </button>

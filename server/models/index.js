@@ -5,17 +5,17 @@ const Action = require('./Action');
 const BehaviorProfile = require('./BehaviorProfile');
 
 // Define associations
-Game.hasMany(Player, { foreignKey: 'gameId', as: 'players' });
-Player.belongsTo(Game, { foreignKey: 'gameId', as: 'game' });
+Game.hasMany(Player, { foreignKey: 'gameId', sourceKey: 'gameId', as: 'players' });
+Player.belongsTo(Game, { foreignKey: 'gameId', targetKey: 'gameId', as: 'game' });
 
-Game.hasMany(Action, { foreignKey: 'gameId', as: 'actions' });
-Action.belongsTo(Game, { foreignKey: 'gameId', as: 'game' });
+Game.hasMany(Action, { foreignKey: 'gameId', sourceKey: 'gameId', as: 'actions' });
+Action.belongsTo(Game, { foreignKey: 'gameId', targetKey: 'gameId', as: 'game' });
 
-Player.hasMany(Action, { foreignKey: 'playerId', as: 'actions' });
-Action.belongsTo(Player, { foreignKey: 'playerId', as: 'player' });
+Player.hasMany(Action, { foreignKey: 'playerId', sourceKey: 'playerId', as: 'actions' });
+Action.belongsTo(Player, { foreignKey: 'playerId', targetKey: 'playerId', as: 'player' });
 
-Player.hasOne(BehaviorProfile, { foreignKey: 'playerId', as: 'behaviorProfile' });
-BehaviorProfile.belongsTo(Player, { foreignKey: 'playerId', as: 'player' });
+Player.hasOne(BehaviorProfile, { foreignKey: 'playerId', sourceKey: 'playerId', as: 'behaviorProfile' });
+BehaviorProfile.belongsTo(Player, { foreignKey: 'playerId', targetKey: 'playerId', as: 'player' });
 
 // Sync database
 const syncDatabase = async (force = false) => {
