@@ -13,6 +13,7 @@ import AddPlayerDialog from './AddPlayerDialog';
 import BlindSettingsDialog from './BlindSettingsDialog';
 import RaiseAmountDialog from './RaiseAmountDialog';
 import GameFlowNotification from './GameFlowNotification';
+import ChipAnimation from './ChipAnimation';
 import './GameTable.css';
 
 const GameTable = () => {
@@ -56,6 +57,9 @@ const GameTable = () => {
   // 新增：游戏流程通知的状态管理
   const [showGameFlowNotification, setShowGameFlowNotification] = useState(false);
   const [gameFlowMessage, setGameFlowMessage] = useState('');
+  
+  // 新增：筹码动画的状态管理
+  const [chipAnimations, setChipAnimations] = useState([]);
   
   // 使用 ref 来存储最新的 getGameState 函数引用
   const getGameStateRef = useRef(getGameState);
@@ -142,6 +146,43 @@ const GameTable = () => {
     }
   };
 
+  // 新增：触发筹码动画
+  const triggerChipAnimation = (playerId, amount) => {
+    if (!gameState?.players || amount <= 0) return;
+
+    const player = gameState.players.find(p => p.id === playerId);
+    if (!player) return;
+
+    // 找到玩家在数组中的索引
+    const playerIndex = gameState.players.findIndex(p => p.id === playerId);
+    if (playerIndex === -1) return;
+
+    // 计算玩家位置
+    const myPlayerIndex = myPlayerId ? gameState.players.findIndex(p => p.id === myPlayerId) : -1;
+    const playerPosition = getAdjustedPlayerPosition(playerIndex, gameState.players.length, myPlayerIndex);
+
+    // 底池位置（桌子中心）
+    const potPosition = { x: 400, y: 300 }; // 桌子中心位置
+
+    // 创建动画对象
+    const animationId = Date.now() + Math.random();
+    const newAnimation = {
+      id: animationId,
+      fromPosition: playerPosition,
+      toPosition: potPosition,
+      amount: amount,
+      isVisible: true
+    };
+
+    // 添加到动画列表
+    setChipAnimations(prev => [...prev, newAnimation]);
+
+    // 动画完成后移除
+    setTimeout(() => {
+      setChipAnimations(prev => prev.filter(anim => anim.id !== animationId));
+    }, 1200); // 比动画时间长一点
+  };
+
   // 新增：设置玩家手牌的处理函数
   const handleSetPlayerHoleCards = (player) => {
     setSelectedPlayerForHoleCards(player);
@@ -184,6 +225,9 @@ const GameTable = () => {
   // 新增：直接执行玩家操作
   const handlePlayerActionDirect = async (player, actionType, amount = 0) => {
     try {
+      // 记录操作前的底池金额
+      const previousPot = gameState?.game?.currentPot || 0;
+      
       const result = await makeAction(
         gameId, 
         player.id, 
@@ -191,6 +235,14 @@ const GameTable = () => {
         amount, 
         gameState?.game?.currentRound
       );
+      
+      // 检查是否有筹码投入底池，如果有则触发动画
+      if (amount > 0 && (actionType === 'call' || actionType === 'raise' || actionType === 'allin')) {
+        // 延迟一点触发动画，让游戏状态先更新
+        setTimeout(() => {
+          triggerChipAnimation(player.id, amount);
+        }, 100);
+      }
       
       // Handle game flow notifications
       if (result.roundComplete && result.nextRound) {
@@ -237,6 +289,14 @@ const GameTable = () => {
     if (!currentPlayer || !gameState) return;
 
     try {
+      // 检查是否有筹码投入底池，如果有则触发动画
+      if (amount > 0 && (actionType === 'call' || actionType === 'raise' || actionType === 'allin')) {
+        // 延迟一点触发动画，让游戏状态先更新
+        setTimeout(() => {
+          triggerChipAnimation(currentPlayer.id, amount);
+        }, 100);
+      }
+      
       const result = await makeAction(
         gameId, 
         currentPlayer.id, 
@@ -518,6 +578,20 @@ const GameTable = () => {
           <div className="game-table-pot-display">${game?.currentPot || 0}</div>
           <div className="game-table-round-display">{game?.currentRound || 'preflop'}</div>
         </div>
+
+        {/* 筹码动画 */}
+        {chipAnimations.map((animation) => (
+          <ChipAnimation
+            key={animation.id}
+            fromPosition={animation.fromPosition}
+            toPosition={animation.toPosition}
+            amount={animation.amount}
+            isVisible={animation.isVisible}
+            onComplete={() => {
+              // 动画完成后的回调
+            }}
+          />
+        ))}
       </div>
 
       {/* 新增：自己的手牌显示区域 */}

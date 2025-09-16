@@ -1,0 +1,127 @@
+/* ChipAnimation Component Styles */
+.chip-animation-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1000;
+}
+
+.chip-animation {
+  position: absolute;
+  left: var(--start-x);
+  top: var(--start-y);
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  transition: none;
+}
+
+.chip-animation.animating {
+  opacity: 1;
+  animation: chipFly 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+.chip-animation.completed {
+  opacity: 0;
+}
+
+.chip {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ffd700 0%, #ffed4e 50%, #ffd700 100%);
+  border: 3px solid #b8860b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 
+    0 4px 8px rgba(0, 0, 0, 0.3),
+    inset 0 2px 4px rgba(255, 255, 255, 0.3),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.2);
+  position: relative;
+}
+
+.chip::before {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  right: 2px;
+  bottom: 2px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.3) 0%, transparent 50%, rgba(0, 0, 0, 0.1) 100%);
+  pointer-events: none;
+}
+
+.chip-value {
+  color: #000;
+  font-size: 10px;
+  font-weight: bold;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
+  z-index: 1;
+}
+
+@keyframes chipFly {
+  0% {
+    left: var(--start-x);
+    top: var(--start-y);
+    transform: translate(-50%, -50%) scale(0.8);
+    opacity: 1;
+  }
+  
+  20% {
+    transform: translate(-50%, -50%) scale(1.2);
+  }
+  
+  50% {
+    left: var(--control-x);
+    top: var(--control-y);
+    transform: translate(-50%, -50%) scale(1);
+  }
+  
+  80% {
+    transform: translate(-50%, -50%) scale(1.1);
+  }
+  
+  100% {
+    left: var(--end-x);
+    top: var(--end-y);
+    transform: translate(-50%, -50%) scale(0.8);
+    opacity: 0.8;
+  }
+}
+
+/* 不同金额的筹码颜色 */
+.chip.small {
+  background: linear-gradient(135deg, #c0c0c0 0%, #e8e8e8 50%, #c0c0c0 100%);
+  border-color: #808080;
+}
+
+.chip.medium {
+  background: linear-gradient(135deg, #ffd700 0%, #ffed4e 50%, #ffd700 100%);
+  border-color: #b8860b;
+}
+
+.chip.large {
+  background: linear-gradient(135deg, #ff6b35 0%, #ff8c42 50%, #ff6b35 100%);
+  border-color: #cc5500;
+}
+
+.chip.xlarge {
+  background: linear-gradient(135deg, #8b0000 0%, #dc143c 50%, #8b0000 100%);
+  border-color: #660000;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .chip {
+    width: 30px;
+    height: 30px;
+  }
+  
+  .chip-value {
+    font-size: 8px;
+  }
+}
