@@ -1,18 +1,19 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useGame } from '../hooks/useGame';
 import './GameSetup.css';
 
-
-
-const GameSetup = ({ onGameStart }) => {
+const GameSetup = () => {
   const { createGame, loading, error } = useGame();
+  const navigate = useNavigate();
   const [smallBlind, setSmallBlind] = useState(10);
   const [bigBlind, setBigBlind] = useState(20);
 
   const handleCreateGame = async () => {
     try {
       const game = await createGame(smallBlind, bigBlind);
-      onGameStart(game.id);
+      // Navigate to the game URL with the game ID
+      navigate(`/game/${game.id}`);
     } catch (err) {
       console.error('Failed to create game:', err);
     }

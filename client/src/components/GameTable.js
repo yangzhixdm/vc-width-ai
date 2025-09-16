@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useGame } from '../hooks/useGame';
 import PlayerSeat from './PlayerSeat';
 import CommunityCards from './CommunityCards';
@@ -15,7 +16,9 @@ import GameFlowNotification from './GameFlowNotification';
 import GameStatusDisplay from './GameStatusDisplay';
 import './GameTable.css';
 
-const GameTable = ({ gameId, onGameEnd }) => {
+const GameTable = () => {
+  const { gameId } = useParams();
+  const navigate = useNavigate();
   const { 
     gameState, 
     getGameState, 
@@ -60,15 +63,25 @@ const GameTable = ({ gameId, onGameEnd }) => {
   getGameStateRef.current = getGameState;
 
   // Load game state on mount and periodically
-  // useEffect(() => {
-  //   if (gameId) {
-  //     getGameStateRef.current(gameId);
-  //     const interval = setInterval(() => {
-  //       getGameStateRef.current(gameId);
-  //     }, 2000);
-  //     return () => clearInterval(interval);
-  //   }
-  // }, [gameId]); // 只依赖 gameId，避免无限循环
+  useEffect(() => {
+    if (gameId) {
+      const loadGame = async () => {
+        try {
+          await getGameStateRef.current(gameId);
+        } catch (err) {
+          console.error('Failed to load game:', err);
+          // If game doesn't exist or there's an error, redirect to home
+          navigate('/');
+        }
+      };
+      
+      loadGame();
+      const interval = setInterval(() => {
+        getGameStateRef.current(gameId);
+      }, 2000);
+      return () => clearInterval(interval);
+    }
+  }, [gameId, navigate]); // 只依赖 gameId，避免无限循环
 
   // Find current player to act
   useEffect(() => {
@@ -454,6 +467,18 @@ const GameTable = ({ gameId, onGameEnd }) => {
   const myPlayer = getMyPlayer();
   const myPlayerIndex = myPlayer ? players.findIndex(p => p.id === myPlayerId) : -1;
 
+  // Show loading state if game is being loaded
+  if (loading && !gameState) {
+    return (
+      <div className="game-table-container">
+        <div className="loading-container">
+          <div className="loading-spinner"></div>
+          <p>Loading game...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="game-table-container">
       <GameInfo 
@@ -605,7 +630,7 @@ const GameTable = ({ gameId, onGameEnd }) => {
         
         <button 
           className="game-table-control-btn btn-secondary"
-          onClick={onGameEnd}
+          onClick={() => navigate('/')}
         >
           End Game
         </button>
