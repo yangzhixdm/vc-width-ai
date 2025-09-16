@@ -13,7 +13,7 @@ const GameSetup = () => {
     try {
       const game = await createGame(smallBlind, bigBlind);
       // Navigate to the game URL with the game ID
-      navigate(`/game/${game.id}`);
+      navigate(`/game/${game.gameId}`);
     } catch (err) {
       console.error('Failed to create game:', err);
     }
