@@ -227,8 +227,6 @@ const GameTable = () => {
   const handlePlayerActionDirect = async (player, actionType, amount = 0) => {
     try {
       // 记录操作前的底池金额
-      const previousPot = gameState?.game?.currentPot || 0;
-      
       const result = await makeAction(
         gameId, 
         player.id, 

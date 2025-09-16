@@ -58,8 +58,8 @@ const PotDisplay = ({ potAmount, currentRound }) => {
         
         {/* 底池金额显示 */}
         <div className="pot-amount-display">
-          <div className="pot-amount">${potAmount}</div>
-          <div className="pot-label">POT</div>
+          <div className="pot-amount">{potAmount}</div>
+          <div className="pot-label"></div>
         </div>
       </div>
       

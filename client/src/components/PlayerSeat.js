@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, Coins } from 'lucide-react';
+import { User } from 'lucide-react';
 import './PlayerSeat.css';
 
 const PlayerSeat = ({ 
@@ -112,13 +112,12 @@ const PlayerSeat = ({
 
       <div className="player-seat-info">
         <div className="player-seat-name">
-          {player.name}
+          [ {player.name} ]
           {player.isHuman && ' (You)'}
           {isMe && ' (Me)'}
         </div>
         <div className="player-seat-chips">
-          <Coins size={12} />
-          ${player.chips}
+          {player.chips}
         </div>
         <div className="player-seat-position">{player.role}</div>
         {!isMe && onSetAsMe && !myPlayerId && (
@@ -127,7 +126,7 @@ const PlayerSeat = ({
             onClick={handleSetAsMe}
             title="设置为自己"
           >
-            me
+            set me
           </button>
         )}
       </div>

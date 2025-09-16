@@ -148,7 +148,7 @@
 }
 
 .game-table-control-btn.btn-secondary {
-  background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+  background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
   color: white;
   box-shadow: 0 4px 15px rgba(108, 117, 125, 0.3);
 }
