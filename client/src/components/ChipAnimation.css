@@ -23,6 +23,10 @@
   animation: chipFly 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
 }
 
+.chip-animation.animating.pot-to-player {
+  animation: chipFlyPotToPlayer 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
 .chip-animation.completed {
   opacity: 0;
 }
@@ -90,6 +94,40 @@
     top: var(--end-y);
     transform: translate(-50%, -50%) scale(0.8);
     opacity: 0.8;
+  }
+}
+
+@keyframes chipFlyPotToPlayer {
+  0% {
+    left: var(--start-x);
+    top: var(--start-y);
+    transform: translate(-50%, -50%) scale(0.8);
+    opacity: 1;
+  }
+  
+  15% {
+    transform: translate(-50%, -50%) scale(1.3);
+  }
+  
+  30% {
+    left: var(--control-x);
+    top: var(--control-y);
+    transform: translate(-50%, -50%) scale(1.1);
+  }
+  
+  60% {
+    transform: translate(-50%, -50%) scale(1.2);
+  }
+  
+  85% {
+    transform: translate(-50%, -50%) scale(1.1);
+  }
+  
+  100% {
+    left: var(--end-x);
+    top: var(--end-y);
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
   }
 }
 

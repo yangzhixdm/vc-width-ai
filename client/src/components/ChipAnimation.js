@@ -6,7 +6,8 @@ const ChipAnimation = ({
   toPosition, 
   amount, 
   onComplete,
-  isVisible = false 
+  isVisible = false,
+  isPotToPlayer = false
 }) => {
   const [animationState, setAnimationState] = useState('idle');
 
@@ -15,7 +16,7 @@ const ChipAnimation = ({
       setAnimationState('animating');
       
       // 动画持续时间
-      const animationDuration = 1000; // 1秒
+      const animationDuration = isPotToPlayer ? 1200 : 1000; // 从底池到玩家1.2秒，其他1秒
       
       // 动画完成后调用回调
       const timer = setTimeout(() => {
@@ -54,7 +55,7 @@ const ChipAnimation = ({
   return (
     <div className="chip-animation-container">
       <div 
-        className={`chip-animation ${animationState}`}
+        className={`chip-animation ${animationState} ${isPotToPlayer ? 'pot-to-player' : ''}`}
         style={{
           '--start-x': `${startX}px`,
           '--start-y': `${startY}px`,

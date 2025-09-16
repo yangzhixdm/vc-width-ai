@@ -147,7 +147,7 @@ const GameTable = () => {
     }
   };
 
-  // 新增：触发筹码动画
+  // 新增：触发筹码动画（从玩家到底池）
   const triggerChipAnimation = (playerId, amount) => {
     if (!gameState?.players || amount <= 0) return;
 
@@ -162,8 +162,8 @@ const GameTable = () => {
     const myPlayerIndex = myPlayerId ? gameState.players.findIndex(p => p.id === myPlayerId) : -1;
     const playerPosition = getAdjustedPlayerPosition(playerIndex, gameState.players.length, myPlayerIndex);
 
-    // 底池位置（桌子中心，稍微偏上一点）
-    const potPosition = { x: 400, y: 280 }; // 桌子中心位置，稍微偏上
+    // 底池位置（桌子中心）
+    const potPosition = { x: 400, y: 300 }; // 桌子中心位置
 
     // 创建动画对象
     const animationId = Date.now() + Math.random();
@@ -173,6 +173,44 @@ const GameTable = () => {
       toPosition: potPosition,
       amount: amount,
       isVisible: true
+    };
+
+    // 添加到动画列表
+    setChipAnimations(prev => [...prev, newAnimation]);
+
+    // 动画完成后移除
+    setTimeout(() => {
+      setChipAnimations(prev => prev.filter(anim => anim.id !== animationId));
+    }, 1200); // 比动画时间长一点
+  };
+
+  // 新增：触发从底池到玩家的筹码动画
+  const triggerPotToPlayerAnimation = (playerId, amount) => {
+    if (!gameState?.players || amount <= 0) return;
+
+    const player = gameState.players.find(p => p.id === playerId);
+    if (!player) return;
+
+    // 找到玩家在数组中的索引
+    const playerIndex = gameState.players.findIndex(p => p.id === playerId);
+    if (playerIndex === -1) return;
+
+    // 计算玩家位置
+    const myPlayerIndex = myPlayerId ? gameState.players.findIndex(p => p.id === myPlayerId) : -1;
+    const playerPosition = getAdjustedPlayerPosition(playerIndex, gameState.players.length, myPlayerIndex);
+
+    // 底池位置（桌子中心）
+    const potPosition = { x: 400, y: 300 }; // 桌子中心位置
+
+    // 创建动画对象（从底池到玩家）
+    const animationId = Date.now() + Math.random();
+    const newAnimation = {
+      id: animationId,
+      fromPosition: potPosition,
+      toPosition: playerPosition,
+      amount: amount,
+      isVisible: true,
+      isPotToPlayer: true // 标记这是从底池到玩家的动画
     };
 
     // 添加到动画列表
@@ -405,6 +443,12 @@ const GameTable = () => {
     try {
       const result = await settleChips(gameId, winnerId);
       console.log(`Winner: ${result.winner.name}, Chips won: ${result.winner.chipsWon}`);
+      
+      // 触发从底池到玩家的筹码动画
+      if (result.winner && result.winner.chipsWon > 0) {
+        triggerPotToPlayerAnimation(winnerId, result.winner.chipsWon);
+      }
+      
       setShowSettleDialog(false);
     } catch (err) {
       console.error('Failed to settle chips:', err);
@@ -588,6 +632,7 @@ const GameTable = () => {
             toPosition={animation.toPosition}
             amount={animation.amount}
             isVisible={animation.isVisible}
+            isPotToPlayer={animation.isPotToPlayer}
             onComplete={() => {
               // 动画完成后的回调
             }}
