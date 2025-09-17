@@ -299,6 +299,17 @@ const GameTable = () => {
             break;
           case 'showdown':
             message = '摊牌阶段！比较手牌确定获胜者';
+            // 处理自动showdown的筹码动画
+            if (result.showdownResult && result.showdownResult.winner) {
+              const winner = result.showdownResult.winner;
+              const potAmount = result.showdownResult.pot || 0;
+              if (potAmount > 0) {
+                // 延迟一点触发动画，让游戏状态先更新
+                setTimeout(() => {
+                  triggerPotToPlayerAnimation(winner.player.playerId, potAmount);
+                }, 500);
+              }
+            }
             break;
           default:
             message = `进入${result.nextRound}阶段`;
@@ -370,6 +381,17 @@ const GameTable = () => {
               break;
             case 'showdown':
               message = '摊牌阶段！比较手牌确定获胜者';
+              // 处理自动showdown的筹码动画
+              if (result.showdownResult && result.showdownResult.winner) {
+                const winner = result.showdownResult.winner;
+                const potAmount = result.showdownResult.pot || 0;
+                if (potAmount > 0) {
+                  // 延迟一点触发动画，让游戏状态先更新
+                  setTimeout(() => {
+                    triggerPotToPlayerAnimation(winner.player.playerId, potAmount);
+                  }, 500);
+                }
+              }
               break;
             default:
               message = `进入${result.nextRound}阶段`;

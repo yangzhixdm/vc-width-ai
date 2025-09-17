@@ -381,10 +381,11 @@ class GameService {
     let nextPlayer = null;
     let gameContinued = false;
     let handNumber = game.handNumber;
+    let advanceResult = null;
 
     if (isRoundComplete) {
       // Advance to next round
-      const advanceResult = await this.advanceToNextRound(gameId);
+      advanceResult = await this.advanceToNextRound(gameId);
       
       // Handle different return types
       if (typeof advanceResult === 'object' && advanceResult.round) {
@@ -417,7 +418,8 @@ class GameService {
       roundComplete: isRoundComplete,
       nextRound: nextRound,
       gameContinued: gameContinued,
-      handNumber: handNumber
+      handNumber: handNumber,
+      showdownResult: isRoundComplete && nextRound === 'showdown' && advanceResult && advanceResult.showdownResult ? advanceResult.showdownResult : null
     };
   }
 
@@ -856,6 +858,7 @@ class GameService {
     if (activePlayers.length === 1) {
       // Only one player left, they win
       const winner = activePlayers[0];
+      const potAmount = game.currentPot; // 保存底池金额
       await this.distributePot(gameId, [winner]);
       
       // Check if game should continue or end
@@ -865,7 +868,7 @@ class GameService {
         await this.startNextHand(gameId);
         return { 
           winner, 
-          pot: game.currentPot, 
+          pot: potAmount, 
           gameContinued: true,
           handNumber: game.handNumber + 1
         };
@@ -878,7 +881,7 @@ class GameService {
         });
         return { 
           winner, 
-          pot: game.currentPot, 
+          pot: potAmount, 
           gameContinued: false,
           gameEnded: true
         };
@@ -888,6 +891,7 @@ class GameService {
     // Multiple players, need to compare hands
     const handEvaluations = await this.evaluateAllHands(gameId, activePlayers);
     const winner = handEvaluations[0]; // Highest hand wins
+    const potAmount = game.currentPot; // 保存底池金额
 
     await this.distributePot(gameId, [winner]);
     
@@ -898,7 +902,7 @@ class GameService {
       await this.startNextHand(gameId);
       return { 
         winner, 
-        pot: game.currentPot, 
+        pot: potAmount, 
         handEvaluations,
         gameContinued: true,
         handNumber: game.handNumber + 1
@@ -912,7 +916,7 @@ class GameService {
       });
       return { 
         winner, 
-        pot: game.currentPot, 
+        pot: potAmount, 
         handEvaluations,
         gameContinued: false,
         gameEnded: true
