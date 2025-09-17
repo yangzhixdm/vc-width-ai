@@ -76,8 +76,10 @@ class GameService {
     
     for (let i = 0; i < players.length; i++) {
       const player = players[i];
-      const roleIndex = (i + dealerPosition) % players.length;
-      const role = positions[roleIndex] || 'unset';
+      // Calculate role based on relative position from dealer
+      // Dealer is at position 0, so we need to find the relative position
+      const relativePosition = (i - dealerPosition + players.length) % players.length;
+      const role = positions[relativePosition] || 'unset';
       
       await player.update({
         position: i,
@@ -779,7 +781,8 @@ class GameService {
     // Move dealer button and setup positions for next hand
     const playersWithChips = game.players.filter(p => p.chips > 0);
     if (playersWithChips.length > 1) {
-      await this.setupPositions(gameId, playersWithChips);
+      await this.rotateDealerButton(gameId, playersWithChips);
+      await this.setupPositions(game, playersWithChips);
       
       // Post blinds for next hand
       await this.postBlinds(gameId);
@@ -1047,12 +1050,14 @@ class GameService {
       throw new Error('Game not found');
     }
 
-    // Find current dealer position
-    const currentDealerIndex = players.findIndex(p => p.role === 'button');
-    const nextDealerIndex = (currentDealerIndex + 1) % players.length;
+    // Get current dealer position from game state
+    const currentDealerPosition = game.dealerPosition || 0;
+    
+    // Move dealer button clockwise to next player
+    const nextDealerPosition = (currentDealerPosition + 1) % players.length;
     
     // Update dealer position in game
-    await game.update({ dealerPosition: nextDealerIndex });
+    await game.update({ dealerPosition: nextDealerPosition });
   }
 
   // Update behavior profiles for all players in the game
