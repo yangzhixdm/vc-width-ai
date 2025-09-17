@@ -11,6 +11,7 @@ import CommunityCardsSelector from './CommunityCardsSelector';
 import SettleChipsDialog from './SettleChipsDialog';
 import AddPlayerDialog from './AddPlayerDialog';
 import BlindSettingsDialog from './BlindSettingsDialog';
+import ButtonPositionDialog from './ButtonPositionDialog';
 import RaiseAmountDialog from './RaiseAmountDialog';
 import GameFlowNotification from './GameFlowNotification';
 import ChipAnimation from './ChipAnimation';
@@ -31,6 +32,7 @@ const GameTable = () => {
     endHand,
     startGame,
     addPlayer,
+    setButtonPosition,
     loading, 
     error 
   } = useGame();
@@ -43,6 +45,7 @@ const GameTable = () => {
   const [showSettleDialog, setShowSettleDialog] = useState(false);
   const [showAddPlayerDialog, setShowAddPlayerDialog] = useState(false);
   const [showBlindSettingsDialog, setShowBlindSettingsDialog] = useState(false);
+  const [showButtonPositionDialog, setShowButtonPositionDialog] = useState(false);
   
   // 新增：自己玩家的状态管理
   const [myPlayerId, setMyPlayerId] = useState(null);
@@ -498,6 +501,15 @@ const GameTable = () => {
     }
   };
 
+  const handleSetButtonPosition = async (buttonPlayerId) => {
+    try {
+      await setButtonPosition(gameId, buttonPlayerId);
+      console.log('Button position updated successfully');
+    } catch (error) {
+      console.error('Error setting button position:', error);
+    }
+  };
+
   const getAllUsedCards = () => {
     if (!gameState) return [];
     
@@ -588,6 +600,7 @@ const GameTable = () => {
         players={players} 
         onAddPlayer={() => setShowAddPlayerDialog(true)}
         onBlindSettings={() => setShowBlindSettingsDialog(true)}
+        onButtonPosition={() => setShowButtonPositionDialog(true)}
         loading={loading}
       />
       
@@ -822,6 +835,15 @@ const GameTable = () => {
           currentBigBlind={gameState?.game?.bigBlind || 20}
           onSave={handleSaveBlindSettings}
           onCancel={() => setShowBlindSettingsDialog(false)}
+          loading={loading}
+        />
+      )}
+
+      {showButtonPositionDialog && gameState && (
+        <ButtonPositionDialog
+          players={gameState.players || []}
+          onSetButtonPosition={handleSetButtonPosition}
+          onClose={() => setShowButtonPositionDialog(false)}
           loading={loading}
         />
       )}

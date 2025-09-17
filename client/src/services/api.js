@@ -146,6 +146,14 @@ export const gameAPI = {
       chips
     });
     return response.data;
+  },
+
+  // Set button position manually
+  setButtonPosition: async (gameId, buttonPlayerId) => {
+    const response = await api.post(`/api/games/${gameId}/set-button`, {
+      buttonPlayerId
+    });
+    return response.data;
   }
 };
 
