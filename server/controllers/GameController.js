@@ -436,6 +436,36 @@ class GameController {
       };
     }
   }
+
+  // Set button position manually
+  async setButtonPosition(ctx) {
+    try {
+      const { gameId } = ctx.params;
+      const { buttonPlayerId } = ctx.request.body;
+      
+      if (!buttonPlayerId) {
+        ctx.status = 400;
+        ctx.body = {
+          success: false,
+          error: 'Button player ID is required'
+        };
+        return;
+      }
+      
+      const game = await GameService.setButtonPosition(gameId, buttonPlayerId);
+      
+      ctx.body = {
+        success: true,
+        data: game
+      };
+    } catch (error) {
+      ctx.status = 400;
+      ctx.body = {
+        success: false,
+        error: error.message
+      };
+    }
+  }
 }
 
 module.exports = new GameController();

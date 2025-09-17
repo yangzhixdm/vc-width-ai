@@ -89,6 +89,45 @@ class GameService {
     }
   }
 
+  // Manually set button position and recalculate all positions clockwise
+  async setButtonPosition(gameId, buttonPlayerId) {
+    const game = await Game.findOne({ 
+      where: { gameId },
+      include: [{ model: Player, as: 'players' }]
+    });
+
+    if (!game) {
+      throw new Error('Game not found');
+    }
+
+    const players = game.players.sort((a, b) => a.position - b.position);
+    const buttonPlayer = players.find(p => p.playerId === buttonPlayerId);
+    
+    if (!buttonPlayer) {
+      throw new Error('Player not found');
+    }
+
+    // Update game's dealer position
+    await game.update({ dealerPosition: buttonPlayer.position });
+
+    // Recalculate all positions based on new button position
+    const positions = ['button', 'sb', 'bb', 'utg', 'utg+1', 'utg+2', 'cutoff'];
+    
+    for (let i = 0; i < players.length; i++) {
+      const player = players[i];
+      // Calculate role based on relative position from new button position
+      const relativePosition = (i - buttonPlayer.position + players.length) % players.length;
+      const role = positions[relativePosition] || 'unset';
+      
+      await player.update({
+        role: role,
+        game_name: game.name
+      });
+    }
+
+    return game;
+  }
+
   // Get next player to act
   async getNextPlayer(gameId) {
     const game = await Game.findOne({ 

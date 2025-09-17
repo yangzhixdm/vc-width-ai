@@ -39,4 +39,7 @@ router.get('/:gameId/behavior-profiles', GameController.getGameBehaviorProfiles)
 router.get('/players/:playerId/behavior-profile', GameController.getPlayerBehaviorProfile);
 router.post('/players/:playerId/behavior-profile', GameController.updateBehaviorProfile);
 
+// Button position management routes
+router.post('/:gameId/set-button', GameController.setButtonPosition);
+
 module.exports = router;

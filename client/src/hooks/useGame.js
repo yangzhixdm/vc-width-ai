@@ -328,6 +328,26 @@ export const GameProvider = ({ children }) => {
     }
   };
 
+  // Set button position manually
+  const setButtonPosition = async (gameId, buttonPlayerId) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await gameAPI.setButtonPosition(gameId, buttonPlayerId);
+      if (response.success) {
+        await getGameState(gameId);
+        return response.data;
+      } else {
+        throw new Error(response.error);
+      }
+    } catch (err) {
+      setError(err.message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Clear AI recommendation
   const clearAIRecommendation = () => {
     setAiRecommendation(null);
@@ -358,6 +378,7 @@ export const GameProvider = ({ children }) => {
     getNextPlayer,
     setCurrentPlayer,
     updatePlayerChips,
+    setButtonPosition,
     clearAIRecommendation,
     clearError
   };

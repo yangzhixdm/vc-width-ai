@@ -2,7 +2,7 @@ import React from 'react';
 import { Users, Clock } from 'lucide-react';
 import './GameInfo.css';
 
-const GameInfo = ({ game, players = [], onAddPlayer, onBlindSettings, loading }) => {
+const GameInfo = ({ game, players = [], onAddPlayer, onBlindSettings, onButtonPosition, loading }) => {
   const activePlayers = players.filter(p => p.isActive && !p.isFolded).length;
 
   const getRoundDisplay = (round) => {
@@ -35,6 +35,14 @@ const GameInfo = ({ game, players = [], onAddPlayer, onBlindSettings, loading })
           title="Blind Settings"
         >
           ⚙
+        </button>
+        <button 
+          className="game-table-control-button button-position"
+          onClick={onButtonPosition}
+          disabled={loading || players.length < 2}
+          title="Set Button Position"
+        >
+          🎯
         </button>
       </div>
     </div>
