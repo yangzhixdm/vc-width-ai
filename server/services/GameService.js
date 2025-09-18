@@ -53,7 +53,7 @@ class GameService {
     }
 
     // Set up positions and roles
-    await this.setupPositions(game, game.players);
+    await this.setupPositions(gameId, game.players);
 
     // Deal hole cards
     await this.dealHoleCards(gameId);
@@ -68,7 +68,12 @@ class GameService {
   }
 
   // Set up player positions and roles
-  async setupPositions(game, players) {
+  async setupPositions(gameId, players) {
+    const game = await Game.findOne({ 
+      where: { gameId },
+    });
+
+    console.log('setupPositions players', players);
     const positions = ['button', 'sb', 'bb', 'utg', 'utg+1', 'utg+2', 'cutoff'];
     
     // Start from dealer position
@@ -81,11 +86,18 @@ class GameService {
       const relativePosition = (i - dealerPosition + players.length) % players.length;
       const role = positions[relativePosition] || 'unset';
       
-      await player.update({
-        position: i,
+      // 只在第一次设置position，之后保持不变
+      const updateData = {
         role: role,
         game_name: game.name
-      });
+      };
+      
+      // 如果玩家还没有position，则设置一个固定的座位号
+      if (player.position === null || player.position === undefined) {
+        updateData.position = i;
+      }
+      
+      await player.update(updateData);
     }
   }
 
@@ -399,7 +411,7 @@ class GameService {
       console.log('Round is complete, advancing to next round');
       // Advance to next round
       advanceResult = await this.advanceToNextRound(gameId);
-      
+      console.log('advanceResult', advanceResult);
       // Handle different return types
       if (typeof advanceResult === 'object' && advanceResult.round) {
         // Showdown case - returns { round, showdownResult }
@@ -408,9 +420,10 @@ class GameService {
           gameContinued = advanceResult.showdownResult.gameContinued || false;
           handNumber = advanceResult.showdownResult.handNumber || game.handNumber;
         }
-      } else {
+      } else { 
         // Regular round advancement
         nextRound = advanceResult;
+        console.log('nextRound', nextRound);
         // If not showdown, get first player for next round (starts from small blind)
         if (nextRound !== 'showdown') {
           nextPlayer = await this.getFirstPlayerForNewRound(gameId);
@@ -849,7 +862,7 @@ class GameService {
     const playersWithChips = game.players.filter(p => p.chips > 0);
     if (playersWithChips.length > 1) {
       await this.rotateDealerButton(gameId, playersWithChips);
-      await this.setupPositions(game, playersWithChips);
+      await this.setupPositions(gameId, playersWithChips);
       
       // Post blinds for next hand
       await this.postBlinds(gameId);
@@ -1097,7 +1110,7 @@ class GameService {
     const playersWithChips = game.players.filter(p => p.chips > 0);
     if (playersWithChips.length > 1) {
       await this.rotateDealerButton(gameId, playersWithChips);
-      await this.setupPositions(game, playersWithChips);
+      await this.setupPositions(gameId, playersWithChips);
       
       // Post blinds for next hand
       await this.postBlinds(gameId);
