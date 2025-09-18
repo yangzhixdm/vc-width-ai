@@ -292,7 +292,7 @@ const GameTable = () => {
       
       // Handle game flow notifications
       if (result.roundComplete && result.nextRound) {
-        if (result.nextRound === 'showdown') {
+        if (result.nextRound === 'showdown' || result.nextRound === 'endhand') {
           if (result.showdownResult && result.showdownResult.winner) {
             const winner = result.showdownResult.winner;
             const potAmount = result.showdownResult.pot || 0;
@@ -303,7 +303,7 @@ const GameTable = () => {
               
               // 延迟一点触发动画，让游戏状态先更新
               setTimeout(() => {
-                triggerPotToPlayerAnimation(winner.playerId, potAmount, () => {
+                triggerPotToPlayerAnimation(winner.playerId || (winner.player && winner.player.playerId), potAmount, () => {
                   setShowdownAnimationCompleted(true);
                   // 动画完成后，开始下一手牌
                   handleEndHandAfterAnimation();
@@ -373,7 +373,7 @@ const GameTable = () => {
               
               // 延迟一点触发动画，让游戏状态先更新
               setTimeout(() => {
-                triggerPotToPlayerAnimation(winner.playerId, potAmount, () => {
+                triggerPotToPlayerAnimation(winner.playerId || (winner.player && winner.player.playerId), potAmount, () => {
                   setShowdownAnimationCompleted(true);
                   // 动画完成后，开始下一手牌
                   handleEndHandAfterAnimation();
