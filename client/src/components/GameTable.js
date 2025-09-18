@@ -306,12 +306,12 @@ const GameTable = () => {
                 triggerPotToPlayerAnimation(winner.playerId || (winner.player && winner.player.playerId), potAmount, () => {
                   setShowdownAnimationCompleted(true);
                   // 动画完成后，开始下一手牌
-                  handleEndHandAfterAnimation();
+                  // handleEndHandAfterAnimation();
                 });
               }, 500);
             } else {
               // 如果没有筹码动画，直接开始下一手牌
-              handleEndHandAfterAnimation();
+              // handleEndHandAfterAnimation();
             }
           }
         }
@@ -376,12 +376,12 @@ const GameTable = () => {
                 triggerPotToPlayerAnimation(winner.playerId || (winner.player && winner.player.playerId), potAmount, () => {
                   setShowdownAnimationCompleted(true);
                   // 动画完成后，开始下一手牌
-                  handleEndHandAfterAnimation();
+                  // handleEndHandAfterAnimation();
                 });
               }, 500);
             } else {
               // 如果没有筹码动画，直接开始下一手牌
-              handleEndHandAfterAnimation();
+              // handleEndHandAfterAnimation();
             }
           }
         }
@@ -464,11 +464,11 @@ const GameTable = () => {
         triggerPotToPlayerAnimation(winnerId, result.winner.chipsWon, () => {
           setShowdownAnimationCompleted(true);
           // 动画完成后，开始下一手牌
-          handleEndHandAfterAnimation();
+          //handleEndHandAfterAnimation();
         });
       } else {
         // 如果没有筹码动画，直接开始下一手牌
-        handleEndHandAfterAnimation();
+        // handleEndHandAfterAnimation();
       }
       
       setShowSettleDialog(false);

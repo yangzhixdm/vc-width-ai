@@ -129,7 +129,7 @@ class GameService {
   }
 
   // Get next player to act
-  async getNextPlayer(gameId) {
+  async getNextPlayer(gameId, currentPlayerId = null) {
     const game = await Game.findOne({ 
       where: { gameId },
       include: [{ model: Player, as: 'players' }]
@@ -140,7 +140,9 @@ class GameService {
     }
 
     const activePlayers = game.players
-      .filter(p => p.isActive && !p.isFolded && p.chips > 0)
+      .filter(p => () =>{
+        return p.isActive && (!p.isFolded || p.playerId === currentPlayerId) && p.chips > 0
+      })
       .sort((a, b) => a.position - b.position);
 
     if (activePlayers.length === 0) {
@@ -148,7 +150,8 @@ class GameService {
     }
 
     // If no current player set, start with first player after BB
-    if (!game.currentPlayerId) {
+    const playerIdToUse = currentPlayerId || game.currentPlayerId;
+    if (!playerIdToUse) {
       const bbPlayer = activePlayers.find(p => p.role === 'bb');
       if (bbPlayer) {
         const bbIndex = activePlayers.findIndex(p => p.playerId === bbPlayer.playerId);
@@ -164,8 +167,11 @@ class GameService {
       }
     }
 
+
     // Find current player index
-    const currentIndex = activePlayers.findIndex(p => p.playerId === game.currentPlayerId);
+    const currentIndex = activePlayers.findIndex(p => p.playerId === playerIdToUse);
+
+    console.log('getNextPlayer currentIndex', currentIndex);
     
     // If current player not found or is last, start from beginning
     if (currentIndex === -1 || currentIndex === activePlayers.length - 1) {
@@ -177,6 +183,9 @@ class GameService {
     // Move to next player
     const nextPlayer = activePlayers[currentIndex + 1];
     await game.update({ currentPlayerId: nextPlayer.playerId });
+
+    console.log('getNextPlayer nextPlayer', nextPlayer);
+
     return nextPlayer;
   }
 
@@ -316,6 +325,9 @@ class GameService {
       throw new Error('Game or player not found');
     }
 
+    // 保存当前玩家ID，用于后续查找下一个玩家
+    const currentPlayerId = game.currentPlayerId;
+
     // Handle different action types
     let updatedPlayer = { ...player.dataValues };
     
@@ -384,6 +396,7 @@ class GameService {
     let advanceResult = null;
 
     if (isRoundComplete) {
+      console.log('Round is complete, advancing to next round');
       // Advance to next round
       advanceResult = await this.advanceToNextRound(gameId);
       
@@ -405,7 +418,8 @@ class GameService {
       }
     } else {
       // Get next player in current round
-      nextPlayer = await this.getNextPlayer(gameId);
+      console.log('getNextPlayer');
+      nextPlayer = await this.getNextPlayer(gameId, currentPlayerId);
       console.log('Next player:', nextPlayer.name);
     }
 
