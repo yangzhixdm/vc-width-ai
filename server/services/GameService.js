@@ -904,7 +904,7 @@ class GameService {
     const winner = handEvaluations[0]; // Highest hand wins
     const potAmount = game.currentPot; // 保存底池金额
 
-    await this.distributePot(gameId, [winner]);
+    await this.distributePot(gameId, [winner.player]);
     
     // Check if game should continue or end
     const shouldContinue = await this.shouldGameContinue(gameId);
