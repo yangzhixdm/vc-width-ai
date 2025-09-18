@@ -376,7 +376,7 @@ class GameService {
     });
 
     // Check if betting round is complete
-    const isRoundComplete = await this.isBettingRoundComplete(gameId);
+    const { isRoundComplete } = await this.isBettingRoundComplete(gameId);
     let nextRound = null;
     let nextPlayer = null;
     let gameContinued = false;
@@ -419,7 +419,7 @@ class GameService {
       nextRound: nextRound,
       gameContinued: gameContinued,
       handNumber: handNumber,
-      showdownResult: isRoundComplete && nextRound === 'showdown' && advanceResult && advanceResult.showdownResult ? advanceResult.showdownResult : null
+      showdownResult: isRoundComplete && (nextRound === 'showdown' || nextRound === 'endhand') && advanceResult && advanceResult.showdownResult ? advanceResult.showdownResult : null
     };
   }
 
@@ -435,7 +435,7 @@ class GameService {
     // If only one player left, round is complete
     if (activePlayers.length <= 1) {
       console.log('Only one player left, round complete');
-      return true;
+      return { isRoundComplete: true, playerNumbers: activePlayers.length };
     }
 
     // Check if all players have acted and bets are equal
@@ -468,16 +468,19 @@ class GameService {
       
       if (allActed && allEqualBets) {
         console.log('Round is complete!');
-        return true;
+        return { isRoundComplete: true, playerNumbers: activePlayers.length };
       }
     }
 
-    return false;
+    return { isRoundComplete: false, playerNumbers: activePlayers.length };
   }
 
   // Advance to next betting round
   async advanceToNextRound(gameId) {
-    const game = await Game.findOne({ where: { gameId } });
+    const game = await Game.findOne({ 
+      where: { gameId },
+      include: [{ model: Player, as: 'players' }]
+    });
     if (!game) {
       throw new Error('Game not found');
     }
@@ -489,6 +492,14 @@ class GameService {
 
     // Reset player states for new round first
     await this.resetPlayerStatesForNewRound(gameId);
+
+
+    const activePlayers = game.players.filter(p => !p.isFolded && p.isActive);
+    
+    if (activePlayers.length === 1) {
+      const showdownResult = await this.handleShowdown(gameId);
+      return { round: 'endhand', showdownResult };
+    }
 
     switch (currentRound) {
       case 'preflop':
@@ -985,8 +996,8 @@ class GameService {
       const winner = winners[i];
       const amount = potPerWinner + (i < remainder ? 1 : 0);
       
-      await winner.player.update({
-        chips: winner.player.chips + amount
+      await winner.update({
+        chips: winner.chips + amount
       });
     }
 

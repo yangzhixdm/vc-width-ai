@@ -303,7 +303,7 @@ const GameTable = () => {
               
               // 延迟一点触发动画，让游戏状态先更新
               setTimeout(() => {
-                triggerPotToPlayerAnimation(winner.player.playerId, potAmount, () => {
+                triggerPotToPlayerAnimation(winner.playerId, potAmount, () => {
                   setShowdownAnimationCompleted(true);
                   // 动画完成后，开始下一手牌
                   handleEndHandAfterAnimation();
@@ -373,7 +373,7 @@ const GameTable = () => {
               
               // 延迟一点触发动画，让游戏状态先更新
               setTimeout(() => {
-                triggerPotToPlayerAnimation(winner.player.playerId, potAmount, () => {
+                triggerPotToPlayerAnimation(winner.playerId, potAmount, () => {
                   setShowdownAnimationCompleted(true);
                   // 动画完成后，开始下一手牌
                   handleEndHandAfterAnimation();

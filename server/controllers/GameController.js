@@ -96,6 +96,7 @@ class GameController {
         data: action
       };
     } catch (error) {
+      console.log("error", error.stack);
       ctx.status = 400;
       ctx.body = {
         success: false,
