@@ -108,7 +108,7 @@ const PlayerSeat = ({
           </div>
         )}
       </div>
-
+      <div className={`player-seat-position player-seat-position-${player.role}`}>{player.role}</div>
       <div className="player-seat-info">
         <div className="player-seat-name">
           [ {player.name} ]
@@ -118,7 +118,6 @@ const PlayerSeat = ({
         <div className="player-seat-chips">
           {player.chips}
         </div>
-        <div className="player-seat-position">{player.role}</div>
         {!isMe && onSetAsMe && !myPlayerId && (
           <button 
             className="set-as-me-btn"

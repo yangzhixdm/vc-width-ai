@@ -406,6 +406,7 @@ class GameService {
     } else {
       // Get next player in current round
       nextPlayer = await this.getNextPlayer(gameId);
+      console.log('Next player:', nextPlayer.name);
     }
 
     return {
