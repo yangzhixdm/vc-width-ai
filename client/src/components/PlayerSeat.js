@@ -8,7 +8,6 @@ const PlayerSeat = ({
   isCurrentPlayer, 
   isMe,
   myPlayerId,
-  onAction, 
   onGetAIRecommendation,
   onSetAsMe,
   onSetPlayerHoleCards,

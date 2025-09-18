@@ -286,37 +286,18 @@ const GameTable = () => {
       
       // Handle game flow notifications
       if (result.roundComplete && result.nextRound) {
-        let message = '';
-        switch (result.nextRound) {
-          case 'flop':
-            message = '翻牌阶段开始！发3张公共牌';
-            break;
-          case 'turn':
-            message = '转牌阶段开始！发第4张公共牌';
-            break;
-          case 'river':
-            message = '河牌阶段开始！发第5张公共牌';
-            break;
-          case 'showdown':
-            message = '摊牌阶段！比较手牌确定获胜者';
-            // 处理自动showdown的筹码动画
-            if (result.showdownResult && result.showdownResult.winner) {
-              const winner = result.showdownResult.winner;
-              const potAmount = result.showdownResult.pot || 0;
-              if (potAmount > 0) {
-                // 延迟一点触发动画，让游戏状态先更新
-                setTimeout(() => {
-                  triggerPotToPlayerAnimation(winner.player.playerId, potAmount);
-                }, 500);
-              }
+        if (result.nextRound === 'showdown') {
+          if (result.showdownResult && result.showdownResult.winner) {
+            const winner = result.showdownResult.winner;
+            const potAmount = result.showdownResult.pot || 0;
+            if (potAmount > 0) {
+              // 延迟一点触发动画，让游戏状态先更新
+              setTimeout(() => {
+                triggerPotToPlayerAnimation(winner.player.playerId, potAmount);
+              }, 500);
             }
-            break;
-          default:
-            message = `进入${result.nextRound}阶段`;
+          }
         }
-        
-        setGameFlowMessage(message);
-        // setShowGameFlowNotification(true);
       }
     } catch (err) {
       console.error('Failed to make player action:', err);
@@ -363,43 +344,19 @@ const GameTable = () => {
       console.log('GameTable - Action result:', result);
       if (result.roundComplete && result.nextRound) {
         console.log('Round completed! Next round:', result.nextRound);
-        let message = '';
-        
         // Check if game continued to next hand
-        if (result.gameContinued && result.handNumber) {
-          message = `第${result.handNumber}手开始！新的一轮游戏`;
-        } else {
-          switch (result.nextRound) {
-            case 'flop':
-              message = '翻牌阶段开始！发3张公共牌';
-              break;
-            case 'turn':
-              message = '转牌阶段开始！发第4张公共牌';
-              break;
-            case 'river':
-              message = '河牌阶段开始！发第5张公共牌';
-              break;
-            case 'showdown':
-              message = '摊牌阶段！比较手牌确定获胜者';
-              // 处理自动showdown的筹码动画
-              if (result.showdownResult && result.showdownResult.winner) {
-                const winner = result.showdownResult.winner;
-                const potAmount = result.showdownResult.pot || 0;
-                if (potAmount > 0) {
-                  // 延迟一点触发动画，让游戏状态先更新
-                  setTimeout(() => {
-                    triggerPotToPlayerAnimation(winner.player.playerId, potAmount);
-                  }, 500);
-                }
-              }
-              break;
-            default:
-              message = `进入${result.nextRound}阶段`;
+        if (result.nextRound === 'showdown') {
+          if (result.showdownResult && result.showdownResult.winner) {
+            const winner = result.showdownResult.winner;
+            const potAmount = result.showdownResult.pot || 0;
+            if (potAmount > 0) {
+              // 延迟一点触发动画，让游戏状态先更新
+              setTimeout(() => {
+                triggerPotToPlayerAnimation(winner.player.playerId, potAmount);
+              }, 500);
+            }
           }
         }
-        
-        setGameFlowMessage(message);
-        setShowGameFlowNotification(true);
       } else {
         console.log('Round not complete yet. roundComplete:', result.roundComplete, 'nextRound:', result.nextRound);
       }
@@ -640,7 +597,6 @@ const GameTable = () => {
                 isCurrentPlayer={player.id === gameState?.game?.currentPlayerId}
                 isMe={isMe}
                 myPlayerId={myPlayerId}
-                onAction={handleCurrentPlayerAction}
                 onGetAIRecommendation={handleGetAIRecommendation}
                 onSetAsMe={handleSetAsMe}
                 onSetPlayerHoleCards={handleSetPlayerHoleCards}
