@@ -64,6 +64,8 @@ const GameTable = () => {
   
   // 新增：筹码动画的状态管理
   const [chipAnimations, setChipAnimations] = useState([]);
+  const [pendingNextHand, setPendingNextHand] = useState(false);
+  const [showdownAnimationCompleted, setShowdownAnimationCompleted] = useState(false);
   
   // 使用 ref 来存储最新的 getGameState 函数引用
   const getGameStateRef = useRef(getGameState);
@@ -188,7 +190,7 @@ const GameTable = () => {
   };
 
   // 新增：触发从底池到玩家的筹码动画
-  const triggerPotToPlayerAnimation = (playerId, amount) => {
+  const triggerPotToPlayerAnimation = (playerId, amount, onComplete = null) => {
     if (!gameState?.players || amount <= 0) return;
 
     const player = gameState.players.find(p => p.id === playerId);
@@ -213,7 +215,8 @@ const GameTable = () => {
       toPosition: playerPosition,
       amount: amount,
       isVisible: true,
-      isPotToPlayer: true // 标记这是从底池到玩家的动画
+      isPotToPlayer: true, // 标记这是从底池到玩家的动画
+      onComplete: onComplete // 添加完成回调
     };
 
     // 添加到动画列表
@@ -222,6 +225,9 @@ const GameTable = () => {
     // 动画完成后移除
     setTimeout(() => {
       setChipAnimations(prev => prev.filter(anim => anim.id !== animationId));
+      if (onComplete) {
+        onComplete();
+      }
     }, 1200); // 比动画时间长一点
   };
 
@@ -291,10 +297,21 @@ const GameTable = () => {
             const winner = result.showdownResult.winner;
             const potAmount = result.showdownResult.pot || 0;
             if (potAmount > 0) {
+              // 设置等待下一手牌的状态
+              setPendingNextHand(true);
+              setShowdownAnimationCompleted(false);
+              
               // 延迟一点触发动画，让游戏状态先更新
               setTimeout(() => {
-                triggerPotToPlayerAnimation(winner.player.playerId, potAmount);
+                triggerPotToPlayerAnimation(winner.player.playerId, potAmount, () => {
+                  setShowdownAnimationCompleted(true);
+                  // 动画完成后，开始下一手牌
+                  handleEndHandAfterAnimation();
+                });
               }, 500);
+            } else {
+              // 如果没有筹码动画，直接开始下一手牌
+              handleEndHandAfterAnimation();
             }
           }
         }
@@ -350,10 +367,21 @@ const GameTable = () => {
             const winner = result.showdownResult.winner;
             const potAmount = result.showdownResult.pot || 0;
             if (potAmount > 0) {
+              // 设置等待下一手牌的状态
+              setPendingNextHand(true);
+              setShowdownAnimationCompleted(false);
+              
               // 延迟一点触发动画，让游戏状态先更新
               setTimeout(() => {
-                triggerPotToPlayerAnimation(winner.player.playerId, potAmount);
+                triggerPotToPlayerAnimation(winner.player.playerId, potAmount, () => {
+                  setShowdownAnimationCompleted(true);
+                  // 动画完成后，开始下一手牌
+                  handleEndHandAfterAnimation();
+                });
               }, 500);
+            } else {
+              // 如果没有筹码动画，直接开始下一手牌
+              handleEndHandAfterAnimation();
             }
           }
         }
@@ -428,7 +456,19 @@ const GameTable = () => {
       
       // 触发从底池到玩家的筹码动画
       if (result.winner && result.winner.chipsWon > 0) {
-        triggerPotToPlayerAnimation(winnerId, result.winner.chipsWon);
+        // 设置等待下一手牌的状态
+        setPendingNextHand(true);
+        setShowdownAnimationCompleted(false);
+        
+        // 触发动画，并在动画完成后开始下一手牌
+        triggerPotToPlayerAnimation(winnerId, result.winner.chipsWon, () => {
+          setShowdownAnimationCompleted(true);
+          // 动画完成后，开始下一手牌
+          handleEndHandAfterAnimation();
+        });
+      } else {
+        // 如果没有筹码动画，直接开始下一手牌
+        handleEndHandAfterAnimation();
       }
       
       setShowSettleDialog(false);
@@ -447,6 +487,26 @@ const GameTable = () => {
       }
     } catch (err) {
       console.error('Failed to end hand:', err);
+    }
+  };
+
+  // 新增：在动画完成后开始下一手牌
+  const handleEndHandAfterAnimation = async () => {
+    try {
+      const result = await endHand(gameId);
+      if (result.gameEnded) {
+        console.log('Game ended:', result.reason);
+      } else {
+        console.log(`Next hand started with ${result.activePlayers} players`);
+      }
+      // 重置状态
+      setPendingNextHand(false);
+      setShowdownAnimationCompleted(false);
+    } catch (err) {
+      console.error('Failed to end hand:', err);
+      // 即使出错也要重置状态
+      setPendingNextHand(false);
+      setShowdownAnimationCompleted(false);
     }
   };
 
@@ -624,9 +684,7 @@ const GameTable = () => {
             amount={animation.amount}
             isVisible={animation.isVisible}
             isPotToPlayer={animation.isPotToPlayer}
-            onComplete={() => {
-              // 动画完成后的回调
-            }}
+            onComplete={animation.onComplete}
           />
         ))}
       </div>
@@ -732,9 +790,9 @@ const GameTable = () => {
           <button 
             className="game-table-control-btn btn-secondary"
             onClick={handleEndHand}
-            disabled={loading}
+            disabled={loading || pendingNextHand}
           >
-            End Hand
+            {pendingNextHand ? 'Waiting for Animation...' : 'End Hand'}
           </button>
         )}
         
