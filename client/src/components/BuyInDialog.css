@@ -78,15 +78,8 @@
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 215, 0, 0.3);
   border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 20px;
-}
-
-.player-name {
-  font-size: 18px;
-  font-weight: bold;
-  color: #ffd700;
-  margin-bottom: 8px;
+  padding: 5px;
+  display: flex;
 }
 
 .current-chips,

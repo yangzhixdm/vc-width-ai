@@ -92,16 +92,16 @@
   font-size: 13px;
   font-weight: bold;
   color: #fff;
-  margin-bottom: 2px;
   white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis;
+  margin-right: 10px;
+  display: flex;
+  align-items: center;
 }
 
 .player-chips {
   display: flex;
-  align-items: baseline;
-  margin-bottom: 2px;
+  align-items: center;
 }
 
 .chips-amount {
@@ -117,7 +117,6 @@
 }
 
 .player-profit {
-  margin-bottom: 2px;
 }
 
 .profit-positive {
@@ -135,6 +134,8 @@
 .player-buyin-info {
   font-size: 10px;
   color: #aaa;
+  display: flex;
+  align-items: center;
 }
 
 .player-actions {
