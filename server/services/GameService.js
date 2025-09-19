@@ -1454,6 +1454,28 @@ class GameService {
     return player;
   }
 
+  // Buy in chips for a player
+  async buyInChips(gameId, playerId, amount = 2000) {
+    const player = await Player.findOne({
+      where: { playerId: playerId, gameId }
+    });
+
+    if (!player) {
+      throw new Error('Player not found');
+    }
+
+    // Update chips and total buy-in
+    const newChips = player.chips + amount;
+    const newTotalBuyIn = player.totalBuyIn + amount;
+
+    await player.update({
+      chips: newChips,
+      totalBuyIn: newTotalBuyIn
+    });
+
+    return player;
+  }
+
   // Get game state for client
   async getGameState(gameId) {
     const game = await Game.findOne({ 
@@ -1501,7 +1523,8 @@ class GameService {
           isHuman: player.isHuman,
           isFolded: player.isFolded,
           isAllIn: player.isAllIn,
-          isMe: player.isMe
+          isMe: player.isMe,
+          totalBuyIn: player.totalBuyIn
         })),
       actions: game.actions.map(action => ({
         id: action.actionId,

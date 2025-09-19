@@ -172,6 +172,14 @@ export const gameAPI = {
   getMePlayer: async (gameId) => {
     const response = await api.get(`/api/games/${gameId}/me-player`);
     return response.data;
+  },
+
+  // Buy in chips for a player
+  buyInChips: async (gameId, playerId, amount = 2000) => {
+    const response = await api.post(`/api/games/${gameId}/players/${playerId}/buy-in`, {
+      amount
+    });
+    return response.data;
   }
 };
 

@@ -49,4 +49,7 @@ router.get('/:gameId/players/:playerId/can-check', GameController.canPlayerCheck
 router.post('/:gameId/players/:playerId/set-me', GameController.setPlayerAsMe);
 router.get('/:gameId/me-player', GameController.getMePlayer);
 
+// Buy-in management routes
+router.post('/:gameId/players/:playerId/buy-in', GameController.buyInChips);
+
 module.exports = router;

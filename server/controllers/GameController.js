@@ -530,6 +530,28 @@ class GameController {
       };
     }
   }
+
+  // Buy in chips for a player
+  async buyInChips(ctx) {
+    try {
+      const { gameId, playerId } = ctx.params;
+      const { amount = 2000 } = ctx.request.body;
+      
+      const player = await GameService.buyInChips(gameId, playerId, amount);
+      
+      ctx.body = {
+        success: true,
+        data: player
+      };
+    } catch (error) {
+      console.log("error", error.stack);
+      ctx.status = 400;
+      ctx.body = {
+        success: false,
+        error: error.message
+      };
+    }
+  }
 }
 
 module.exports = new GameController();

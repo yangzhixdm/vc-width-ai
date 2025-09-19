@@ -1,0 +1,309 @@
+.buyin-dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  backdrop-filter: blur(5px);
+}
+
+.buyin-dialog {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  border: 2px solid #ffd700;
+  border-radius: 16px;
+  width: 90%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+  color: white;
+  font-family: 'Arial', sans-serif;
+}
+
+.buyin-dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+  color: #000;
+  border-radius: 14px 14px 0 0;
+  border-bottom: 2px solid #ffd700;
+}
+
+.buyin-dialog-header h3 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: bold;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  font-weight: bold;
+  color: #000;
+  cursor: pointer;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.3s ease;
+}
+
+.close-btn:hover {
+  background: rgba(0, 0, 0, 0.1);
+  transform: scale(1.1);
+}
+
+.close-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.buyin-dialog-content {
+  padding: 24px;
+}
+
+.player-info {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.player-name {
+  font-size: 18px;
+  font-weight: bold;
+  color: #ffd700;
+  margin-bottom: 8px;
+}
+
+.current-chips,
+.total-buyin {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+  font-size: 14px;
+}
+
+.current-chips:last-child,
+.total-buyin:last-child {
+  margin-bottom: 0;
+}
+
+.chips-amount,
+.buyin-amount {
+  font-weight: bold;
+  color: #ffd700;
+}
+
+.amount-section {
+  margin-bottom: 20px;
+}
+
+.amount-section label {
+  display: block;
+  font-size: 16px;
+  font-weight: bold;
+  color: #fff;
+  margin-bottom: 8px;
+}
+
+.amount-input-group {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 215, 0, 0.3);
+  border-radius: 8px;
+  padding: 4px;
+  transition: border-color 0.3s ease;
+}
+
+.amount-input-group:focus-within {
+  border-color: #ffd700;
+}
+
+.amount-input {
+  flex: 1;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 16px;
+  padding: 12px 16px;
+  outline: none;
+}
+
+.amount-input::placeholder {
+  color: #aaa;
+}
+
+.amount-label {
+  color: #aaa;
+  font-size: 14px;
+  margin-right: 12px;
+  white-space: nowrap;
+}
+
+.quick-amounts {
+  margin-bottom: 20px;
+}
+
+.quick-amounts-label {
+  font-size: 14px;
+  color: #ccc;
+  margin-bottom: 8px;
+}
+
+.quick-amounts-buttons {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.quick-amount-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  border-radius: 6px;
+  color: white;
+  padding: 8px 12px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.quick-amount-btn:hover {
+  background: rgba(255, 215, 0, 0.2);
+  border-color: #ffd700;
+}
+
+.quick-amount-btn.active {
+  background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+  color: #000;
+  border-color: #ffd700;
+  font-weight: bold;
+}
+
+.quick-amount-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.buyin-summary {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.summary-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.summary-item:last-child {
+  margin-bottom: 0;
+}
+
+.summary-value {
+  font-weight: bold;
+  color: #ffd700;
+}
+
+.buyin-dialog-actions {
+  display: flex;
+  gap: 12px;
+  padding: 0 24px 24px;
+}
+
+.cancel-btn,
+.confirm-btn {
+  flex: 1;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.cancel-btn {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.cancel-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.confirm-btn {
+  background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+  color: white;
+  box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+}
+
+.confirm-btn:hover {
+  background: linear-gradient(135deg, #45a049 0%, #3d8b40 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+}
+
+.confirm-btn:disabled {
+  background: rgba(255, 255, 255, 0.1);
+  color: #aaa;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.cancel-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .buyin-dialog {
+    width: 95%;
+    margin: 20px;
+  }
+  
+  .buyin-dialog-header {
+    padding: 16px 20px;
+  }
+  
+  .buyin-dialog-header h3 {
+    font-size: 18px;
+  }
+  
+  .buyin-dialog-content {
+    padding: 20px;
+  }
+  
+  .quick-amounts-buttons {
+    grid-template-columns: 1fr;
+  }
+  
+  .buyin-dialog-actions {
+    flex-direction: column;
+    padding: 0 20px 20px;
+  }
+}

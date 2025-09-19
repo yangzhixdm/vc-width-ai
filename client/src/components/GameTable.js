@@ -16,6 +16,8 @@ import RaiseAmountDialog from './RaiseAmountDialog';
 import GameFlowNotification from './GameFlowNotification';
 import ChipAnimation from './ChipAnimation';
 import PotDisplay from './PotDisplay';
+import ChipLeaderboard from './ChipLeaderboard';
+import BuyInDialog from './BuyInDialog';
 import './GameTable.css';
 
 const GameTable = () => {
@@ -36,6 +38,7 @@ const GameTable = () => {
     canPlayerCheck,
     setPlayerAsMe,
     getMePlayer,
+    buyInChips,
     loading, 
     error 
   } = useGame();
@@ -69,6 +72,10 @@ const GameTable = () => {
   const [chipAnimations, setChipAnimations] = useState([]);
   const [pendingNextHand, setPendingNextHand] = useState(false);
   const [showdownAnimationCompleted, setShowdownAnimationCompleted] = useState(false);
+  
+  // 新增：买入筹码的状态管理
+  const [showBuyInDialog, setShowBuyInDialog] = useState(false);
+  const [selectedPlayerForBuyIn, setSelectedPlayerForBuyIn] = useState(null);
   
   // 使用 ref 来存储最新的 getGameState 函数引用
   const getGameStateRef = useRef(getGameState);
@@ -576,6 +583,29 @@ const GameTable = () => {
     }
   };
 
+  // 新增：处理买入筹码
+  const handleBuyIn = (playerId) => {
+    const player = gameState?.players?.find(p => p.id === playerId);
+    if (player) {
+      setSelectedPlayerForBuyIn(player);
+      setShowBuyInDialog(true);
+    }
+  };
+
+  // 新增：确认买入筹码
+  const handleBuyInConfirm = async (amount) => {
+    if (!selectedPlayerForBuyIn) return;
+
+    try {
+      await buyInChips(gameId, selectedPlayerForBuyIn.id, amount);
+      setShowBuyInDialog(false);
+      setSelectedPlayerForBuyIn(null);
+      console.log(`Player ${selectedPlayerForBuyIn.name} bought in ${amount} chips`);
+    } catch (err) {
+      console.error('Failed to buy in chips:', err);
+    }
+  };
+
   const getAllUsedCards = () => {
     if (!gameState) return [];
     
@@ -661,6 +691,12 @@ const GameTable = () => {
 
   return (
     <div className="game-table-container">
+      {/* 筹码排行榜 */}
+      <ChipLeaderboard 
+        players={players} 
+        onBuyIn={handleBuyIn}
+      />
+      
       <GameInfo 
         game={game} 
         players={players} 
@@ -931,6 +967,19 @@ const GameTable = () => {
         <div className="game-table-error">
           {error}
         </div>
+      )}
+
+      {/* 买入筹码对话框 */}
+      {showBuyInDialog && selectedPlayerForBuyIn && (
+        <BuyInDialog
+          player={selectedPlayerForBuyIn}
+          onConfirm={handleBuyInConfirm}
+          onCancel={() => {
+            setShowBuyInDialog(false);
+            setSelectedPlayerForBuyIn(null);
+          }}
+          loading={loading}
+        />
       )}
 
       {/* 游戏流程通知 */}

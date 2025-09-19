@@ -73,6 +73,11 @@ const Player = sequelize.define('Player', {
     defaultValue: false,
     comment: '标识这个玩家是否是当前用户（me）'
   },
+  totalBuyIn: {
+    type: DataTypes.INTEGER,
+    defaultValue: 2000,
+    comment: '玩家总共买入的筹码数量'
+  },
   createdAt: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW

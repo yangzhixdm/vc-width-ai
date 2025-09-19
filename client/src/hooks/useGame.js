@@ -404,6 +404,26 @@ export const GameProvider = ({ children }) => {
     }
   };
 
+  // Buy in chips for a player
+  const buyInChips = async (gameId, playerId, amount = 2000) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await gameAPI.buyInChips(gameId, playerId, amount);
+      if (response.success) {
+        await getGameState(gameId);
+        return response.data;
+      } else {
+        throw new Error(response.error);
+      }
+    } catch (err) {
+      setError(err.message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Clear error
   const clearError = () => {
     setError(null);
@@ -433,6 +453,7 @@ export const GameProvider = ({ children }) => {
     canPlayerCheck,
     setPlayerAsMe,
     getMePlayer,
+    buyInChips,
     clearAIRecommendation,
     clearError
   };
