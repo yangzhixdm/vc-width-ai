@@ -297,21 +297,23 @@ const GameTable = () => {
             const winner = result.showdownResult.winner;
             const potAmount = result.showdownResult.pot || 0;
             if (potAmount > 0) {
-              // 设置等待下一手牌的状态
-              setPendingNextHand(true);
-              setShowdownAnimationCompleted(false);
-              
-              // 延迟一点触发动画，让游戏状态先更新
+              // 触发筹码结算动画
               setTimeout(() => {
                 triggerPotToPlayerAnimation(winner.playerId || (winner.player && winner.player.playerId), potAmount, () => {
+                  console.log('筹码结算动画完成');
+                  // 动画完成后，自动开始下一局（但逻辑分离）
                   setShowdownAnimationCompleted(true);
-                  // 动画完成后，开始下一手牌
-                  // handleEndHandAfterAnimation();
+                  // 延迟一点时间让用户看到结算结果，然后自动开始下一局
+                  setTimeout(() => {
+                    handleEndHand();
+                  }, 1000); // 1秒后自动开始下一局
                 });
               }, 500);
             } else {
-              // 如果没有筹码动画，直接开始下一手牌
-              // handleEndHandAfterAnimation();
+              // 如果没有筹码动画，直接开始下一局
+              setTimeout(() => {
+                handleEndHand();
+              }, 500); // 0.5秒后自动开始下一局
             }
           }
         }
@@ -367,21 +369,23 @@ const GameTable = () => {
             const winner = result.showdownResult.winner;
             const potAmount = result.showdownResult.pot || 0;
             if (potAmount > 0) {
-              // 设置等待下一手牌的状态
-              setPendingNextHand(true);
-              setShowdownAnimationCompleted(false);
-              
-              // 延迟一点触发动画，让游戏状态先更新
+              // 触发筹码结算动画
               setTimeout(() => {
                 triggerPotToPlayerAnimation(winner.playerId || (winner.player && winner.player.playerId), potAmount, () => {
+                  console.log('筹码结算动画完成');
+                  // 动画完成后，自动开始下一局（但逻辑分离）
                   setShowdownAnimationCompleted(true);
-                  // 动画完成后，开始下一手牌
-                  // handleEndHandAfterAnimation();
+                  // 延迟一点时间让用户看到结算结果，然后自动开始下一局
+                  setTimeout(() => {
+                    handleEndHand();
+                  }, 1000); // 1秒后自动开始下一局
                 });
               }, 500);
             } else {
-              // 如果没有筹码动画，直接开始下一手牌
-              // handleEndHandAfterAnimation();
+              // 如果没有筹码动画，直接开始下一局
+              setTimeout(() => {
+                handleEndHand();
+              }, 500); // 0.5秒后自动开始下一局
             }
           }
         }
@@ -456,19 +460,21 @@ const GameTable = () => {
       
       // 触发从底池到玩家的筹码动画
       if (result.winner && result.winner.chipsWon > 0) {
-        // 设置等待下一手牌的状态
-        setPendingNextHand(true);
-        setShowdownAnimationCompleted(false);
-        
-        // 触发动画，并在动画完成后开始下一手牌
+        // 触发筹码结算动画
         triggerPotToPlayerAnimation(winnerId, result.winner.chipsWon, () => {
+          console.log('筹码结算动画完成');
+          // 动画完成后，自动开始下一局（但逻辑分离）
           setShowdownAnimationCompleted(true);
-          // 动画完成后，开始下一手牌
-          //handleEndHandAfterAnimation();
+          // 延迟一点时间让用户看到结算结果，然后自动开始下一局
+          setTimeout(() => {
+            handleEndHand();
+          }, 1000); // 1秒后自动开始下一局
         });
       } else {
-        // 如果没有筹码动画，直接开始下一手牌
-        // handleEndHandAfterAnimation();
+        // 如果没有筹码动画，直接开始下一局
+        setTimeout(() => {
+          handleEndHand();
+        }, 500); // 0.5秒后自动开始下一局
       }
       
       setShowSettleDialog(false);
@@ -485,21 +491,7 @@ const GameTable = () => {
       } else {
         console.log(`Next hand started with ${result.activePlayers} players`);
       }
-    } catch (err) {
-      console.error('Failed to end hand:', err);
-    }
-  };
-
-  // 新增：在动画完成后开始下一手牌
-  const handleEndHandAfterAnimation = async () => {
-    try {
-      const result = await endHand(gameId);
-      if (result.gameEnded) {
-        console.log('Game ended:', result.reason);
-      } else {
-        console.log(`Next hand started with ${result.activePlayers} players`);
-      }
-      // 重置状态
+      // 重置动画相关状态
       setPendingNextHand(false);
       setShowdownAnimationCompleted(false);
     } catch (err) {
@@ -509,6 +501,7 @@ const GameTable = () => {
       setShowdownAnimationCompleted(false);
     }
   };
+
 
   const handleStartGame = async () => {
     try {

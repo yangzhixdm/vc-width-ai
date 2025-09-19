@@ -13,7 +13,7 @@ const Game = sequelize.define('Game', {
     unique: true
   },
   status: {
-    type: DataTypes.ENUM('waiting', 'active', 'completed', 'cancelled'),
+    type: DataTypes.ENUM('waiting', 'active', 'hand_completed', 'completed', 'cancelled'),
     defaultValue: 'waiting'
   },
   smallBlind: {

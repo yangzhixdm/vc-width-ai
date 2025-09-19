@@ -107,7 +107,7 @@ sequenceDiagram
     GT-->>U: 显示更新后的游戏状态
 ```
 
-### 3.3 游戏结算流程 (修复后的版本)
+### 3.3 游戏结算流程 (逻辑分离版本)
 
 ```mermaid
 sequenceDiagram
@@ -125,7 +125,7 @@ sequenceDiagram
     UG->>API: gameAPI.settleChips(gameId, winnerId)
     API->>GC: POST /api/games/:gameId/settle
     GC->>GS: settleChips(gameId, winnerId)
-    GS->>DB: 更新获胜者筹码
+    GS->>DB: 更新获胜者筹码，重置底池和当前下注，设置状态为 'hand_completed'
     DB-->>GS: 确认更新
     GS-->>GC: 返回结算结果
     GC-->>API: 返回响应
@@ -135,18 +135,44 @@ sequenceDiagram
     Note over GT: 触发筹码动画
     GT->>CA: triggerPotToPlayerAnimation(winnerId, amount, callback)
     CA-->>GT: 动画完成回调
+    GT->>GT: 设置 showdownAnimationCompleted = true
     
-    Note over GT: 动画完成后自动开始下一局
-    GT->>UG: 调用 handleEndHandAfterAnimation()
+    Note over GT: 自动开始下一局（逻辑分离）
+    GT->>GT: setTimeout(() => handleEndHand(), 1000)
+    GT-->>U: 显示结算结果和动画
+```
+
+### 3.4 开始下一局游戏流程 (独立逻辑)
+
+```mermaid
+sequenceDiagram
+    participant GT as GameTable
+    participant UG as useGame Hook
+    participant API as gameAPI
+    participant GC as GameController
+    participant GS as GameService
+    participant DB as 数据库
+
+    GT->>UG: 调用 endHand(gameId)
     UG->>API: gameAPI.endHand(gameId)
     API->>GC: POST /api/games/:gameId/end-hand
     GC->>GS: endHand(gameId)
-    GS->>DB: 重置游戏状态，开始新一局
+    
+    Note over GS: 开始新一局的完整流程
+    GS->>GS: 检查游戏状态必须为 'hand_completed'
+    GS->>DB: 重置游戏状态为 'active'
+    GS->>DB: 重置所有玩家状态
+    GS->>DB: 移动庄家按钮
+    GS->>DB: 设置玩家位置
+    GS->>DB: 下大小盲注
+    GS->>DB: 发新手牌
+    
     DB-->>GS: 确认更新
     GS-->>GC: 返回新游戏状态
     GC-->>API: 返回响应
     API-->>UG: 更新 gameState
     UG-->>GT: 触发重新渲染
+    GT->>GT: 重置动画状态
     GT-->>U: 显示新一局游戏
 ```
 
@@ -269,7 +295,7 @@ const [showdownAnimationCompleted, setShowdownAnimationCompleted] = useState(fal
 
 ```javascript
 // 游戏状态
-status: 'waiting' | 'active' | 'completed' | 'cancelled'
+status: 'waiting' | 'active' | 'hand_completed' | 'completed' | 'cancelled'
 
 // 游戏轮次
 currentRound: 'preflop' | 'flop' | 'turn' | 'river' | 'showdown'
@@ -309,9 +335,81 @@ const animation = {
 };
 ```
 
-## 8. 错误处理和调试
+## 8. 游戏逻辑分离设计
 
-### 8.1 常见问题排查
+### 8.1 设计理念
+
+游戏结算和开始下一局游戏被设计为两个完全独立的逻辑：
+
+1. **游戏结算逻辑** (`settleChips` - 后端, `handleSettleChips` - 前端)
+   - 负责处理当前手牌的结算
+   - 更新获胜者的筹码
+   - 重置底池和当前下注
+   - 播放筹码动画
+   - **将游戏状态设置为 'hand_completed'**，表示这一盘游戏已结束
+   - 不涉及下一局游戏的准备
+
+2. **开始下一局逻辑** (`endHand` - 后端, `handleEndHand` - 前端)
+   - **检查游戏状态必须为 'hand_completed'**
+   - 负责重置游戏状态为 'active'
+   - 重置所有玩家状态
+   - 移动庄家按钮
+   - 设置玩家位置
+   - **下大小盲注**（这是开始新一局的关键步骤）
+   - 发新手牌
+   - 重置动画相关状态
+   - 与当前手牌的结算完全独立
+
+3. **自动触发机制**
+   - 前端在结算动画完成后自动调用 `handleEndHand`
+   - 但两个逻辑在后端完全分离
+   - 确保数据处理的独立性和清晰性
+
+### 8.2 状态管理
+
+```javascript
+// 动画相关状态
+const [chipAnimations, setChipAnimations] = useState([]);           // 筹码动画列表
+const [pendingNextHand, setPendingNextHand] = useState(false);      // 等待下一手牌
+const [showdownAnimationCompleted, setShowdownAnimationCompleted] = useState(false); // 结算动画完成
+
+// 状态重置时机
+// 1. 结算时：只设置动画状态，不重置
+// 2. 开始下一局时：重置所有动画相关状态
+```
+
+### 8.3 用户体验
+
+- **结算阶段**：用户可以看到完整的筹码动画，了解当前手牌的结果
+- **过渡阶段**：动画完成后，系统自动开始下一局（1秒延迟）
+- **下一局阶段**：自动触发，但逻辑完全分离，确保数据处理的清晰性
+
+### 8.4 后端数据处理分离
+
+```javascript
+// 结算阶段 - 只处理筹码分配
+async settleChips(gameId, winnerId) {
+  // 1. 更新获胜者筹码
+  // 2. 重置底池和当前下注
+  // 3. 将游戏状态设置为 'hand_completed'
+  // 4. 不涉及下一局的任何准备
+}
+
+// 开始下一局阶段 - 完整的游戏初始化
+async endHand(gameId) {
+  // 1. 检查游戏状态必须为 'hand_completed'
+  // 2. 重置游戏状态为 'active'
+  // 3. 重置所有玩家状态
+  // 4. 移动庄家按钮
+  // 5. 设置玩家位置
+  // 6. 下大小盲注 ← 关键步骤
+  // 7. 发新手牌
+}
+```
+
+## 9. 错误处理和调试
+
+### 9.1 常见问题排查
 
 1. **游戏状态不同步**
    - 检查 `getGameState` 调用时机
@@ -328,7 +426,7 @@ const animation = {
    - 验证请求参数
    - 查看服务器日志
 
-### 8.2 调试工具
+### 9.2 调试工具
 
 ```javascript
 // 在浏览器控制台中查看游戏状态
@@ -341,7 +439,7 @@ console.log('Chip Animations:', chipAnimations);
 console.log('Current Player:', currentPlayer);
 ```
 
-## 9. 性能优化建议
+## 10. 性能优化建议
 
 1. **减少不必要的重新渲染**
    - 使用 `useMemo` 和 `useCallback` 优化计算
@@ -355,16 +453,16 @@ console.log('Current Player:', currentPlayer);
    - 实现请求去重
    - 添加适当的缓存机制
 
-## 10. 扩展功能
+## 11. 扩展功能
 
-### 10.1 计划中的功能
+### 11.1 计划中的功能
 
 - [ ] 实时多人游戏支持
 - [ ] 更丰富的AI行为模式
 - [ ] 游戏回放功能
 - [ ] 统计分析面板
 
-### 10.2 技术债务
+### 11.2 技术债务
 
 - [ ] 统一错误处理机制
 - [ ] 添加单元测试

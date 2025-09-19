@@ -786,9 +786,9 @@ class GameService {
       player.update({ currentBet: 0 })
     ));
 
-    // Update game state
+    // Update game state - mark hand as completed
     await game.update({
-      status: 'completed',
+      status: 'hand_completed', // 这一盘游戏已结束
       winner: winnerId,
       currentPot: 0,
       currentBet: 0,
@@ -803,11 +803,11 @@ class GameService {
         newChipCount: winner.player.chips + potAmount
       },
       potAmount,
-      gameStatus: 'completed'
+      gameStatus: 'hand_completed' // 这一盘游戏已结束，等待开始下一局
     };
   }
 
-  // End current hand and prepare for next hand
+  // Start next hand - separate logic from settlement
   async endHand(gameId) {
     const game = await Game.findOne({ 
       where: { gameId },
@@ -816,6 +816,11 @@ class GameService {
 
     if (!game) {
       throw new Error('Game not found');
+    }
+
+    // Only allow starting next hand if current hand is completed
+    if (game.status !== 'hand_completed') {
+      throw new Error('Current hand must be completed before starting next hand');
     }
 
     // Check if game should continue (at least 2 players with chips)
@@ -864,7 +869,7 @@ class GameService {
       await this.rotateDealerButton(gameId, playersWithChips);
       await this.setupPositions(gameId, playersWithChips);
       
-      // Post blinds for next hand
+      // Post blinds for next hand - this is the key part of starting a new hand
       await this.postBlinds(gameId);
       
       // Deal new hole cards
