@@ -140,6 +140,14 @@ const PlayerSeat = ({
           >
             Call
           </button>
+          <button
+            className="player-seat-action-btn Check"
+            onClick={(e) => handleActionClick('check', e)}
+            title="check"
+            disabled={isButtonDisabled()}
+          >
+            Check
+          </button>
           <button 
             className="player-seat-action-btn raise"
             onClick={(e) => handleActionClick('raise', e)}
@@ -163,6 +171,14 @@ const PlayerSeat = ({
             disabled={isButtonDisabled()}
           >
             All In
+          </button>
+          <button 
+            className="player-seat-action-btn AskAI"
+            onClick={() => onGetAIRecommendation()}
+            title="AI Recommendation"
+            disabled={isButtonDisabled()}
+          >
+            AskAI
           </button>
         </div>
       )}

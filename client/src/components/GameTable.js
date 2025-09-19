@@ -265,6 +265,14 @@ const GameTable = () => {
         }
       }
       
+      
+      if (actionType === 'check') {
+        const game = gameState?.game;
+        if (game) {
+          actionAmount = 0
+        }
+      }
+      
       // 直接执行其他操作
       handlePlayerActionDirect(player, actionType, actionAmount);
     }
