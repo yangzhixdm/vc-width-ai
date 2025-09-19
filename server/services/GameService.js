@@ -979,44 +979,237 @@ class GameService {
         player,
         hand,
         handRank: hand.rank,
-        handName: hand.name
+        handName: hand.name,
+        handValue: hand.value,
+        kickers: hand.kickers
       };
     });
 
     // Sort by hand strength (highest first)
-    return evaluations.sort((a, b) => b.handRank - a.handRank);
+    return evaluations.sort((a, b) => this.compareHands(a.hand, b.hand));
   }
 
-  // Evaluate a single hand
+  // Evaluate a single hand with complete poker hand ranking
   evaluateHand(holeCards, communityCards) {
     const allCards = [...holeCards, ...communityCards];
     
-    // Simple hand evaluation (can be enhanced with proper poker hand ranking)
-    const suits = allCards.map(card => card.suit);
-    const values = allCards.map(card => card.value);
-    
-    // Check for pairs, three of a kind, etc.
-    const valueCounts = {};
-    values.forEach(value => {
-      valueCounts[value] = (valueCounts[value] || 0) + 1;
-    });
-
-    const counts = Object.values(valueCounts).sort((a, b) => b - a);
-    
-    // Simple ranking system
-    if (counts[0] === 4) {
-      return { rank: 8, name: 'Four of a Kind' };
-    } else if (counts[0] === 3 && counts[1] === 2) {
-      return { rank: 7, name: 'Full House' };
-    } else if (counts[0] === 3) {
-      return { rank: 4, name: 'Three of a Kind' };
-    } else if (counts[0] === 2 && counts[1] === 2) {
-      return { rank: 3, name: 'Two Pair' };
-    } else if (counts[0] === 2) {
-      return { rank: 2, name: 'One Pair' };
-    } else {
-      return { rank: 1, name: 'High Card' };
+    if (allCards.length < 5) {
+      return { rank: 0, name: 'Incomplete Hand', value: 0, kickers: [] };
     }
+
+    // Get all possible 5-card combinations
+    const combinations = this.getCombinations(allCards, 5);
+    let bestHand = { rank: 0, name: 'High Card', value: 0, kickers: [] };
+
+    for (const combination of combinations) {
+      const hand = this.evaluateFiveCardHand(combination);
+      if (this.compareHands(hand, bestHand) > 0) {
+        bestHand = hand;
+      }
+    }
+
+    return bestHand;
+  }
+
+  // Get all combinations of r cards from n cards
+  getCombinations(cards, r) {
+    if (r === 1) return cards.map(card => [card]);
+    if (r === cards.length) return [cards];
+    if (r > cards.length) return [];
+
+    const combinations = [];
+    for (let i = 0; i <= cards.length - r; i++) {
+      const head = cards[i];
+      const tailCombinations = this.getCombinations(cards.slice(i + 1), r - 1);
+      for (const tail of tailCombinations) {
+        combinations.push([head, ...tail]);
+      }
+    }
+    return combinations;
+  }
+
+  // Evaluate a 5-card hand
+  evaluateFiveCardHand(cards) {
+    const sortedCards = this.sortCardsByValue(cards);
+    const values = sortedCards.map(card => this.getCardValue(card.value));
+    const suits = sortedCards.map(card => card.suit);
+
+    // Check for flush
+    const isFlush = suits.every(suit => suit === suits[0]);
+    
+    // Check for straight
+    const isStraight = this.isStraight(values);
+    
+    // Check for straight flush
+    if (isFlush && isStraight) {
+      if (values[0] === 14) { // Ace high straight
+        return { rank: 10, name: 'Royal Flush', value: 14, kickers: [] };
+      } else {
+        return { rank: 9, name: 'Straight Flush', value: values[0], kickers: [] };
+      }
+    }
+
+    // Check for four of a kind
+    const valueCounts = this.getValueCounts(values);
+    const counts = Object.values(valueCounts).sort((a, b) => b - a);
+    const fourOfAKind = Object.keys(valueCounts).find(value => valueCounts[value] === 4);
+    
+    if (fourOfAKind) {
+      const kicker = Object.keys(valueCounts).find(value => valueCounts[value] === 1);
+      return { 
+        rank: 8, 
+        name: 'Four of a Kind', 
+        value: parseInt(fourOfAKind), 
+        kickers: [parseInt(kicker)] 
+      };
+    }
+
+    // Check for full house
+    const threeOfAKind = Object.keys(valueCounts).find(value => valueCounts[value] === 3);
+    const pair = Object.keys(valueCounts).find(value => valueCounts[value] === 2);
+    
+    if (threeOfAKind && pair) {
+      return { 
+        rank: 7, 
+        name: 'Full House', 
+        value: parseInt(threeOfAKind), 
+        kickers: [parseInt(pair)] 
+      };
+    }
+
+    // Check for flush
+    if (isFlush) {
+      return { 
+        rank: 6, 
+        name: 'Flush', 
+        value: values[0], 
+        kickers: values.slice(1) 
+      };
+    }
+
+    // Check for straight
+    if (isStraight) {
+      return { 
+        rank: 5, 
+        name: 'Straight', 
+        value: values[0], 
+        kickers: [] 
+      };
+    }
+
+    // Check for three of a kind
+    if (threeOfAKind) {
+      const kickers = Object.keys(valueCounts)
+        .filter(value => valueCounts[value] === 1)
+        .map(value => parseInt(value))
+        .sort((a, b) => b - a);
+      return { 
+        rank: 4, 
+        name: 'Three of a Kind', 
+        value: parseInt(threeOfAKind), 
+        kickers 
+      };
+    }
+
+    // Check for two pair
+    const pairs = Object.keys(valueCounts)
+      .filter(value => valueCounts[value] === 2)
+      .map(value => parseInt(value))
+      .sort((a, b) => b - a);
+    
+    if (pairs.length === 2) {
+      const kicker = Object.keys(valueCounts).find(value => valueCounts[value] === 1);
+      return { 
+        rank: 3, 
+        name: 'Two Pair', 
+        value: pairs[0], 
+        kickers: [pairs[1], parseInt(kicker)] 
+      };
+    }
+
+    // Check for one pair
+    if (pairs.length === 1) {
+      const kickers = Object.keys(valueCounts)
+        .filter(value => valueCounts[value] === 1)
+        .map(value => parseInt(value))
+        .sort((a, b) => b - a);
+      return { 
+        rank: 2, 
+        name: 'One Pair', 
+        value: pairs[0], 
+        kickers 
+      };
+    }
+
+    // High card
+    return { 
+      rank: 1, 
+      name: 'High Card', 
+      value: values[0], 
+      kickers: values.slice(1) 
+    };
+  }
+
+  // Get numeric value of a card
+  getCardValue(value) {
+    const valueMap = {
+      '2': 2, '3': 3, '4': 4, '5': 5, '6': 6, '7': 7, '8': 8, '9': 9, '10': 10,
+      'J': 11, 'Q': 12, 'K': 13, 'A': 14
+    };
+    return valueMap[value] || 0;
+  }
+
+  // Sort cards by value (highest first)
+  sortCardsByValue(cards) {
+    return cards.sort((a, b) => this.getCardValue(b.value) - this.getCardValue(a.value));
+  }
+
+  // Check if values form a straight
+  isStraight(values) {
+    // Check for regular straight
+    for (let i = 0; i < values.length - 1; i++) {
+      if (values[i] - values[i + 1] !== 1) {
+        // Check for A-2-3-4-5 straight (wheel)
+        if (values[0] === 14 && values[1] === 5 && values[2] === 4 && values[3] === 3 && values[4] === 2) {
+          return true;
+        }
+        return false;
+      }
+    }
+    return true;
+  }
+
+  // Get count of each card value
+  getValueCounts(values) {
+    const counts = {};
+    values.forEach(value => {
+      counts[value] = (counts[value] || 0) + 1;
+    });
+    return counts;
+  }
+
+  // Compare two hands (returns positive if hand1 > hand2, negative if hand1 < hand2, 0 if equal)
+  compareHands(hand1, hand2) {
+    // First compare by rank
+    if (hand1.rank !== hand2.rank) {
+      return hand1.rank - hand2.rank;
+    }
+
+    // If ranks are equal, compare by value
+    if (hand1.value !== hand2.value) {
+      return hand1.value - hand2.value;
+    }
+
+    // If values are equal, compare kickers
+    for (let i = 0; i < Math.max(hand1.kickers.length, hand2.kickers.length); i++) {
+      const kicker1 = hand1.kickers[i] || 0;
+      const kicker2 = hand2.kickers[i] || 0;
+      if (kicker1 !== kicker2) {
+        return kicker1 - kicker2;
+      }
+    }
+
+    return 0; // Hands are equal
   }
 
   // Distribute pot to winner(s)
