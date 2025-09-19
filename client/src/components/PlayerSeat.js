@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { User } from 'lucide-react';
 import './PlayerSeat.css';
 
@@ -12,8 +12,32 @@ const PlayerSeat = ({
   onSetAsMe,
   onSetPlayerHoleCards,
   onPlayerAction,
-  gameStatus
+  gameStatus,
+  gameId,
+  canPlayerCheck,
+  hasMePlayer
 }) => {
+  const [canCheck, setCanCheck] = useState(false);
+
+  // Check if player can check when it's their turn
+  useEffect(() => {
+    const checkCanCheck = async () => {
+      if (isCurrentPlayer && canPlayerCheck && gameId) {
+        try {
+          const result = await canPlayerCheck(gameId, player.id);
+          setCanCheck(result);
+        } catch (error) {
+          console.error('Error checking if player can check:', error);
+          setCanCheck(false);
+        }
+      } else {
+        setCanCheck(false);
+      }
+    };
+
+    checkCanCheck();
+  }, [isCurrentPlayer, canPlayerCheck, gameId, player.id]);
+
   const getStatusClass = () => {
     if (player.isFolded) return 'folded';
     if (player.isAllIn) return 'all-in';
@@ -118,7 +142,7 @@ const PlayerSeat = ({
         <div className="player-seat-chips">
           {player.chips}
         </div>
-        {!isMe && onSetAsMe && !myPlayerId && (
+        {!isMe && onSetAsMe && !hasMePlayer && (
           <button 
             className="set-as-me-btn"
             onClick={handleSetAsMe}
@@ -140,14 +164,16 @@ const PlayerSeat = ({
           >
             Call
           </button>
-          <button
-            className="player-seat-action-btn Check"
-            onClick={(e) => handleActionClick('check', e)}
-            title="check"
-            disabled={isButtonDisabled()}
-          >
-            Check
-          </button>
+          {canCheck && (
+            <button
+              className="player-seat-action-btn Check"
+              onClick={(e) => handleActionClick('check', e)}
+              title="check"
+              disabled={isButtonDisabled()}
+            >
+              Check
+            </button>
+          )}
           <button 
             className="player-seat-action-btn raise"
             onClick={(e) => handleActionClick('raise', e)}
@@ -172,14 +198,16 @@ const PlayerSeat = ({
           >
             All In
           </button>
-          <button 
-            className="player-seat-action-btn AskAI"
-            onClick={() => onGetAIRecommendation()}
-            title="AI Recommendation"
-            disabled={isButtonDisabled()}
-          >
-            AskAI
-          </button>
+          {isMe && (
+            <button 
+              className="player-seat-action-btn AskAI"
+              onClick={() => onGetAIRecommendation()}
+              title="AI Recommendation"
+              disabled={isButtonDisabled()}
+            >
+              AskAI
+            </button>
+          )}
         </div>
       )}
     </div>

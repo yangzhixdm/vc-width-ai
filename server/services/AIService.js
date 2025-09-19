@@ -21,6 +21,9 @@ class AIService {
       // Get recent actions from current game
       const recentActions = await this.getRecentActions(gameId, currentRound);
       
+      // Get all actions from current hand for comprehensive analysis
+      const currentHandActions = await this.getCurrentHandActions(gameId, currentRound);
+      
       // Get historical hand data for all players
       const historicalHands = await this.getHistoricalHands(gameId);
       
@@ -32,6 +35,7 @@ class AIService {
         behaviorProfile, 
         allPlayersProfiles, 
         recentActions, 
+        currentHandActions,
         historicalHands, 
         gameContext
       );
@@ -214,6 +218,35 @@ class AIService {
     }));
   }
 
+  // Get all actions from current hand for AI analysis
+  async getCurrentHandActions(gameId, currentRound) {
+    const game = await require('../models').Game.findOne({ where: { gameId } });
+    if (!game) return [];
+
+    const actions = await Action.findAll({
+      where: { 
+        gameId, 
+        handNumber: game.handNumber 
+      },
+      include: [{ model: Player, as: 'player' }],
+      order: [['createdAt', 'ASC']]
+    });
+
+    return actions.map(action => ({
+      playerName: action.player.name,
+      playerId: action.playerId,
+      round: action.round,
+      position: action.position,
+      actionType: action.actionType,
+      amount: action.amount,
+      potSize: action.potSize,
+      isAIRecommended: action.isAIRecommended,
+      holeCards: action.holeCards,
+      communityCards: action.communityCards,
+      createdAt: action.createdAt
+    }));
+  }
+
   // Get current game context
   async getGameContext(gameId, playerId) {
     const { Game, Player } = require('../models');
@@ -239,7 +272,7 @@ class AIService {
   }
 
   // Build enhanced analysis prompt for LLM
-  buildEnhancedAnalysisPrompt(behaviorProfile, allPlayersProfiles, recentActions, historicalHands, gameContext) {
+  buildEnhancedAnalysisPrompt(behaviorProfile, allPlayersProfiles, recentActions, currentHandActions, historicalHands, gameContext) {
     const currentPlayer = allPlayersProfiles.find(p => p.playerId === gameContext.playerId);
     const otherPlayers = allPlayersProfiles.filter(p => p.playerId !== gameContext.playerId);
 
@@ -282,6 +315,11 @@ ${recentActions.map(action =>
   `- ${action.playerName} (pos ${action.position}): ${action.actionType} ${action.amount > 0 ? `$${action.amount}` : ''}`
 ).join('\n')}
 
+CURRENT HAND ACTION SEQUENCE (All actions in this hand):
+${currentHandActions.map(action => 
+  `- ${action.round}: ${action.playerName} (pos ${action.position}): ${action.actionType} ${action.amount > 0 ? `$${action.amount}` : ''} [Pot: $${action.potSize}]`
+).join('\n')}
+
 HISTORICAL HAND PATTERNS (Last ${historicalHands.length} hands):
 ${historicalHands.slice(-3).map(hand => `
 Round: ${hand.round}
@@ -295,14 +333,18 @@ ANALYSIS INSTRUCTIONS:
 3. Consider pot odds and implied odds
 4. Factor in recent actions and betting patterns
 5. Account for player types (tight/loose, aggressive/passive)
+6. Analyze the complete action sequence of the current hand to understand betting patterns and player intentions
+7. Consider how previous actions in this hand affect the current decision
+8. Look for betting patterns, position plays, and potential bluffs or value bets
 
 Provide your recommendation as a JSON object with:
 {
   "action": "check|call|raise|fold",
   "amount": number (if raise),
   "confidence": 0-100,
-  "reasoning": "detailed explanation considering all player profiles and game context",
-  "playerAnalysis": "brief analysis of key opponents' likely actions"
+  "reasoning": "detailed explanation considering all player profiles, current hand action sequence, and game context",
+  "playerAnalysis": "brief analysis of key opponents' likely actions based on their current hand behavior",
+  "handAnalysis": "analysis of how the current hand action sequence influences the decision"
 }
 `;
   }

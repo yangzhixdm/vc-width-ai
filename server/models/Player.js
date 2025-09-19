@@ -68,6 +68,11 @@ const Player = sequelize.define('Player', {
     type: DataTypes.BOOLEAN,
     defaultValue: false
   },
+  isMe: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+    comment: '标识这个玩家是否是当前用户（me）'
+  },
   createdAt: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW

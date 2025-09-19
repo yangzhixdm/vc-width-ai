@@ -154,6 +154,24 @@ export const gameAPI = {
       buttonPlayerId
     });
     return response.data;
+  },
+
+  // Check if player can check
+  canPlayerCheck: async (gameId, playerId) => {
+    const response = await api.get(`/api/games/${gameId}/players/${playerId}/can-check`);
+    return response.data;
+  },
+
+  // Set player as "me"
+  setPlayerAsMe: async (gameId, playerId) => {
+    const response = await api.post(`/api/games/${gameId}/players/${playerId}/set-me`);
+    return response.data;
+  },
+
+  // Get the "me" player for a game
+  getMePlayer: async (gameId) => {
+    const response = await api.get(`/api/games/${gameId}/me-player`);
+    return response.data;
   }
 };
 

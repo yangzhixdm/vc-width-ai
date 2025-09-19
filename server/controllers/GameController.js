@@ -467,6 +467,69 @@ class GameController {
       };
     }
   }
+
+  // Check if player can check
+  async canPlayerCheck(ctx) {
+    try {
+      const { gameId, playerId } = ctx.params;
+      
+      const canCheck = await GameService.canPlayerCheck(gameId, playerId);
+      
+      ctx.body = {
+        success: true,
+        data: { canCheck }
+      };
+    } catch (error) {
+      console.log("error", error.stack);
+      ctx.status = 400;
+      ctx.body = {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+
+  // Set player as "me"
+  async setPlayerAsMe(ctx) {
+    try {
+      const { gameId, playerId } = ctx.params;
+      
+      const player = await GameService.setPlayerAsMe(gameId, playerId);
+      
+      ctx.body = {
+        success: true,
+        data: player
+      };
+    } catch (error) {
+      console.log("error", error.stack);
+      ctx.status = 400;
+      ctx.body = {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+
+  // Get the "me" player for a game
+  async getMePlayer(ctx) {
+    try {
+      const { gameId } = ctx.params;
+      
+      const player = await GameService.getMePlayer(gameId);
+      
+      ctx.body = {
+        success: true,
+        data: player
+      };
+    } catch (error) {
+      console.log("error", error.stack);
+      ctx.status = 400;
+      ctx.body = {
+        success: false,
+        error: error.message
+      };
+    }
+  }
 }
 
 module.exports = new GameController();

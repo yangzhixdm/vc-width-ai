@@ -42,4 +42,11 @@ router.post('/players/:playerId/behavior-profile', GameController.updateBehavior
 // Button position management routes
 router.post('/:gameId/set-button', GameController.setButtonPosition);
 
+// Player action validation routes
+router.get('/:gameId/players/:playerId/can-check', GameController.canPlayerCheck);
+
+// Player "me" management routes
+router.post('/:gameId/players/:playerId/set-me', GameController.setPlayerAsMe);
+router.get('/:gameId/me-player', GameController.getMePlayer);
+
 module.exports = router;

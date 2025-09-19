@@ -337,6 +337,14 @@ class GameService {
       throw new Error('Game or player not found');
     }
 
+    // 验证check动作的合法性
+    if (actionType === 'check') {
+      const canCheck = await this.canPlayerCheck(gameId, playerId);
+      if (!canCheck) {
+        throw new Error('Cannot check: there is a bet to call or you are not the first to act');
+      }
+    }
+
     // 保存当前玩家ID，用于后续查找下一个玩家
     const currentPlayerId = game.currentPlayerId;
 
@@ -1371,6 +1379,81 @@ class GameService {
     return game ? game.handNumber : 1;
   }
 
+  // Check if player can perform check action
+  async canPlayerCheck(gameId, playerId) {
+    const game = await Game.findOne({ where: { gameId } });
+    const player = await Player.findOne({ where: { playerId } });
+    
+    if (!game || !player) {
+      return false;
+    }
+
+    // 如果当前有下注，且玩家还没有跟注，则不能check
+    if (game.currentBet > 0 && player.currentBet < game.currentBet) {
+      return false;
+    }
+
+    // 获取当前轮次的所有动作
+    const currentRoundActions = await Action.findAll({
+      where: { 
+        gameId, 
+        round: game.currentRound,
+        handNumber: game.handNumber
+      },
+      order: [['createdAt', 'ASC']]
+    });
+
+    // 如果当前轮次没有任何动作，且玩家是第一个行动的，则可以check
+    if (currentRoundActions.length === 0) {
+      return true;
+    }
+
+    // 检查当前轮次是否有任何非check动作（call, raise, fold, allin）
+    const hasNonCheckActions = currentRoundActions.some(action => 
+      action.actionType !== 'check'
+    );
+
+    // 如果有非check动作，则不能check
+    if (hasNonCheckActions) {
+      return false;
+    }
+
+    // 如果所有动作都是check，则可以check
+    return true;
+  }
+
+  // Set player as "me" (only one player per game can be "me")
+  async setPlayerAsMe(gameId, playerId) {
+    const game = await Game.findOne({ where: { gameId } });
+    if (!game) {
+      throw new Error('Game not found');
+    }
+
+    const player = await Player.findOne({ where: { playerId, gameId } });
+    if (!player) {
+      throw new Error('Player not found');
+    }
+
+    // First, unset any existing "me" player in this game
+    await Player.update(
+      { isMe: false },
+      { where: { gameId, isMe: true } }
+    );
+
+    // Set the new player as "me"
+    await player.update({ isMe: true });
+
+    return player;
+  }
+
+  // Get the "me" player for a game
+  async getMePlayer(gameId) {
+    const player = await Player.findOne({ 
+      where: { gameId, isMe: true } 
+    });
+    return player;
+  }
+
   // Get game state for client
   async getGameState(gameId) {
     const game = await Game.findOne({ 
@@ -1417,7 +1500,8 @@ class GameService {
           isActive: player.isActive,
           isHuman: player.isHuman,
           isFolded: player.isFolded,
-          isAllIn: player.isAllIn
+          isAllIn: player.isAllIn,
+          isMe: player.isMe
         })),
       actions: game.actions.map(action => ({
         id: action.actionId,

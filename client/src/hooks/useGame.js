@@ -353,6 +353,57 @@ export const GameProvider = ({ children }) => {
     setAiRecommendation(null);
   };
 
+  // Check if player can check
+  const canPlayerCheck = async (gameId, playerId) => {
+    try {
+      const response = await gameAPI.canPlayerCheck(gameId, playerId);
+      if (response.success) {
+        return response.data.canCheck;
+      } else {
+        throw new Error(response.error);
+      }
+    } catch (err) {
+      setError(err.message);
+      throw err;
+    }
+  };
+
+  // Set player as "me"
+  const setPlayerAsMe = async (gameId, playerId) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await gameAPI.setPlayerAsMe(gameId, playerId);
+      if (response.success) {
+        // Refresh game state after setting me player
+        await getGameState(gameId);
+        return response.data;
+      } else {
+        throw new Error(response.error);
+      }
+    } catch (err) {
+      setError(err.message);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Get the "me" player for a game
+  const getMePlayer = async (gameId) => {
+    try {
+      const response = await gameAPI.getMePlayer(gameId);
+      if (response.success) {
+        return response.data;
+      } else {
+        throw new Error(response.error);
+      }
+    } catch (err) {
+      setError(err.message);
+      throw err;
+    }
+  };
+
   // Clear error
   const clearError = () => {
     setError(null);
@@ -379,6 +430,9 @@ export const GameProvider = ({ children }) => {
     setCurrentPlayer,
     updatePlayerChips,
     setButtonPosition,
+    canPlayerCheck,
+    setPlayerAsMe,
+    getMePlayer,
     clearAIRecommendation,
     clearError
   };

@@ -33,6 +33,9 @@ const GameTable = () => {
     startGame,
     addPlayer,
     setButtonPosition,
+    canPlayerCheck,
+    setPlayerAsMe,
+    getMePlayer,
     loading, 
     error 
   } = useGame();
@@ -92,6 +95,24 @@ const GameTable = () => {
     }
   }, [gameId, navigate]); // 只依赖 gameId，避免无限循环
 
+  // Load me player from database
+  useEffect(() => {
+    const loadMePlayer = async () => {
+      if (gameId && getMePlayer) {
+        try {
+          const mePlayer = await getMePlayer(gameId);
+          if (mePlayer) {
+            setMyPlayerId(mePlayer.playerId);
+          }
+        } catch (error) {
+          console.error('Failed to load me player:', error);
+        }
+      }
+    };
+
+    loadMePlayer();
+  }, [gameId, getMePlayer]);
+
   // Find current player to act
   useEffect(() => {
     if (gameState?.players && gameState?.game?.currentPlayerId) {
@@ -105,9 +126,14 @@ const GameTable = () => {
   }, [gameState]);
 
   // 新增：设置自己玩家的函数
-  const handleSetAsMe = (playerId) => {
-    setMyPlayerId(playerId);
-    setShowMyHoleCards(true);
+  const handleSetAsMe = async (playerId) => {
+    try {
+      await setPlayerAsMe(gameId, playerId);
+      setMyPlayerId(playerId);
+      setShowMyHoleCards(true);
+    } catch (error) {
+      console.error('Failed to set player as me:', error);
+    }
   };
 
   // 新增：获取调整后的玩家位置（将自己显示在正下方）
@@ -663,6 +689,9 @@ const GameTable = () => {
                 onSetPlayerHoleCards={handleSetPlayerHoleCards}
                 onPlayerAction={handlePlayerAction}
                 gameStatus={gameState?.game?.status}
+                gameId={gameId}
+                canPlayerCheck={canPlayerCheck}
+                hasMePlayer={!!myPlayerId}
               />
             );
           })}
