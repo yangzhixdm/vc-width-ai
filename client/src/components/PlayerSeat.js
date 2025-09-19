@@ -105,111 +105,201 @@ const PlayerSeat = ({
   };
 
   return (
-    <div
-      className={`player-seat-container ${getStatusClass()} ${isCurrentPlayer ? 'current-player' : ''} ${isMe ? 'is-me' : ''}`}
-      style={{
-        left: `${position.x}px`,
-        top: `${position.y}px`
-      }}
-    >
-      <div 
-        className={`player-seat-avatar ${isCurrentPlayer ? 'current-player' : ''} clickable-avatar`}
+    <div className="player-seat-container-wrapper">
+      <div
+        className={`player-seat-container ${getStatusClass()} ${isCurrentPlayer ? 'current-player' : ''} ${isMe ? 'is-me' : ''}`}
         style={{
-          background: player.avatar ? `url(${player.avatar})` : 'linear-gradient(135deg, #4a9eff 0%, #357abd 100%)'
+          left: `${position.x}px`,
+          top: `${position.y}px`
         }}
-        onClick={handleAvatarClick}
-        title="点击设置手牌"
       >
-        {!player.avatar && <User size={24} color="white" />}
-        {player.currentBet > 0 && (
-          <div className="player-seat-bet">
-            ${player.currentBet}
-          </div>
-        )}
-        {getStatusIndicator() && (
-          <div className={`player-seat-dealer-button ${getStatusClassIndicator()}`}>
-            {getStatusIndicator()}
-          </div>
-        )}
-      </div>
-      <div className={`player-seat-position player-seat-position-${player.role}`}>{player.role}</div>
-      <div className="player-seat-info">
-        <div className="player-seat-name">
-          [ {player.name} ]
-          {player.isHuman && ' (You)'}
-          {isMe && ' (Me)'}
+        <div 
+          className={`player-seat-avatar ${isCurrentPlayer ? 'current-player' : ''} clickable-avatar`}
+          style={{
+            background: player.avatar ? `url(${player.avatar})` : 'linear-gradient(135deg, #4a9eff 0%, #357abd 100%)'
+          }}
+          onClick={handleAvatarClick}
+          title="点击设置手牌"
+        >
+          {!player.avatar && <User size={24} color="white" />}
         </div>
-        <div className="player-seat-chips">
-          {player.chips}
+        <div className={`player-seat-position player-seat-position-${player.role}`}>{player.role}</div>
+        <div className="player-seat-info">
+          <div className="player-seat-name">
+            [ {player.name} ]
+            {player.isHuman && ' (You)'}
+            {isMe && ' (Me)'}
+          </div>
+          <div className="player-seat-chips">
+            {player.chips}
+          </div>
+          {!isMe && onSetAsMe && !hasMePlayer && (
+            <button 
+              className="set-as-me-btn"
+              onClick={handleSetAsMe}
+              title="设置为自己"
+            >
+              set me
+            </button>
+          )}
         </div>
-        {!isMe && onSetAsMe && !hasMePlayer && (
-          <button 
-            className="set-as-me-btn"
-            onClick={handleSetAsMe}
-            title="设置为自己"
-          >
-            set me
-          </button>
+
+        {/* 操作按钮区域 */}
+        {onPlayerAction && (
+          <div className="player-seat-actions">
+            {canCheck ? (
+              <button
+                className="player-seat-action-btn check"
+                onClick={(e) => handleActionClick('check', e)}
+                title="check"
+                disabled={isButtonDisabled()}
+              >
+                Check
+              </button>
+            ) : (
+              <button 
+                className="player-seat-action-btn call"
+                onClick={(e) => handleActionClick('call', e)}
+                title="跟注"
+                disabled={isButtonDisabled()}
+              >
+                Call
+              </button>
+            )}
+            <button 
+              className="player-seat-action-btn raise"
+              onClick={(e) => handleActionClick('raise', e)}
+              title="加注"
+              disabled={isButtonDisabled()}
+            >
+              Raise
+            </button>
+            <button 
+              className="player-seat-action-btn fold"
+              onClick={(e) => handleActionClick('fold', e)}
+              title="弃牌"
+              disabled={isButtonDisabled()}
+            >
+              Fold
+            </button>
+            <button 
+              className="player-seat-action-btn allin"
+              onClick={(e) => handleActionClick('allin', e)}
+              title="全下"
+              disabled={isButtonDisabled()}
+            >
+              All In
+            </button>
+            {isMe && (
+              <button 
+                className="player-seat-action-btn AskAI"
+                onClick={() => onGetAIRecommendation()}
+                title="AI Recommendation"
+                disabled={isButtonDisabled()}
+              >
+                AskAI
+              </button>
+            )}
+          </div>
         )}
       </div>
 
-      {/* 操作按钮区域 */}
-      {onPlayerAction && (
-        <div className="player-seat-actions">
-          <button 
-            className="player-seat-action-btn call"
-            onClick={(e) => handleActionClick('call', e)}
-            title="跟注"
-            disabled={isButtonDisabled()}
+      {/* 下注筹码显示区域 - 放在玩家和桌子中心之间的直线上 */}
+      {player.currentBet > 0 && (() => {
+        // 桌子中心位置
+        const tableCenterX = 400;
+        const tableCenterY = 300;
+        
+        // 玩家位置
+        const playerX = position.x;
+        const playerY = position.y;
+        
+        // 计算从玩家到桌子中心的向量
+        const deltaX = tableCenterX - playerX;
+        const deltaY = tableCenterY - playerY;
+        
+        // 筹码位置：在玩家和桌子中心之间的中点
+        const chipX = playerX + deltaX * 0.45;
+        const chipY = playerY + deltaY * 0.45;
+        
+        return (
+          <div 
+            className="player-seat-bet-chips"
+            style={{
+              position: 'absolute',
+              left: `${chipX}px`,
+              top: `${chipY}px`,
+              transform: 'translate(-50%, -50%)'
+            }}
           >
-            Call
-          </button>
-          {canCheck && (
-            <button
-              className="player-seat-action-btn Check"
-              onClick={(e) => handleActionClick('check', e)}
-              title="check"
-              disabled={isButtonDisabled()}
-            >
-              Check
-            </button>
-          )}
-          <button 
-            className="player-seat-action-btn raise"
-            onClick={(e) => handleActionClick('raise', e)}
-            title="加注"
-            disabled={isButtonDisabled()}
+            <div className="player-seat-bet-amount">
+              ${player.currentBet}
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* 手牌显示区域 - 只显示自己的手牌，放在玩家和桌子中心之间的直线上 */}
+      {isMe && (() => {
+        // 桌子中心位置
+        const tableCenterX = 400;
+        const tableCenterY = 300;
+        
+        // 玩家位置
+        const playerX = position.x;
+        const playerY = position.y;
+        
+        // 计算从玩家到桌子中心的向量
+        const deltaX = tableCenterX - playerX;
+        const deltaY = tableCenterY - playerY;
+        
+        // 手牌位置：在玩家和桌子中心之间的1/3位置（更靠近玩家）
+        const cardX = playerX + deltaX * 0.30;
+        const cardY = playerY + deltaY * 0.30;
+        
+        return (
+          <div 
+            className="player-seat-hole-cards"
+            style={{
+              position: 'absolute',
+              left: `${cardX}px`,
+              top: `${cardY}px`,
+              transform: 'translate(-50%, -50%)'
+            }}
           >
-            Raise
-          </button>
-          <button 
-            className="player-seat-action-btn fold"
-            onClick={(e) => handleActionClick('fold', e)}
-            title="弃牌"
-            disabled={isButtonDisabled()}
-          >
-            Fold
-          </button>
-          <button 
-            className="player-seat-action-btn allin"
-            onClick={(e) => handleActionClick('allin', e)}
-            title="全下"
-            disabled={isButtonDisabled()}
-          >
-            All In
-          </button>
-          {isMe && (
-            <button 
-              className="player-seat-action-btn AskAI"
-              onClick={() => onGetAIRecommendation()}
-              title="AI Recommendation"
-              disabled={isButtonDisabled()}
-            >
-              AskAI
-            </button>
-          )}
-        </div>
-      )}
+            {player.holeCards && player.holeCards.length > 0 ? (
+              <div className="player-seat-hole-cards-display">
+                {player.holeCards.map((card, index) => (
+                  <div key={index} className="player-seat-hole-card">
+                    <div className="card-value">{card.value}</div>
+                    <div className={`card-suit ${card.suit}`}>
+                      {card.suit === 'hearts' ? '♥' : 
+                      card.suit === 'diamonds' ? '♦' : 
+                      card.suit === 'clubs' ? '♣' : 
+                      card.suit === 'spades' ? '♠' : card.suit}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="player-seat-set-cards-btn">
+                <button 
+                  className="set-cards-button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (onSetPlayerHoleCards) {
+                      onSetPlayerHoleCards(player);
+                    }
+                  }}
+                  title="设置手牌"
+                >
+                  设置手牌
+                </button>
+              </div>
+            )}
+          </div>
+        );
+      })()}
     </div>
   );
 };

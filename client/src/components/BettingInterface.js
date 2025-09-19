@@ -43,6 +43,8 @@ const BettingInterface = ({ game, player, onAction, onClose }) => {
     setSelectedAmount(parseInt(value) || 0);
   };
 
+  // Player can only check if no one has bet in this round (currentBet === 0)
+  // OR if they have already matched the current bet
   const canCheck = game.currentBet === 0 || player.currentBet >= game.currentBet;
   const callAmount = Math.max(0, game.currentBet - player.currentBet);
   const minRaise = game.currentBet + (game.currentBet > 0 ? game.currentBet : game.bigBlind);

@@ -97,6 +97,7 @@
   background: #557e0c;
 }
 
+/* 旧的筹码显示样式 - 现在不再使用 */
 .player-seat-bet {
   position: absolute;
   top: -16px;
@@ -112,6 +113,115 @@
   font-size: 10px;
   font-weight: bold;
   box-shadow: 0 2px 8px rgba(76, 175, 80, 0.4);
+}
+
+/* 新的筹码显示样式 - 放在玩家和桌子中心之间的直线上 */
+.player-seat-bet-chips {
+  z-index: 10;
+  pointer-events: none;
+}
+
+.player-seat-bet-amount {
+  background: linear-gradient(135deg, #ff6b35 0%, #f7931e 100%);
+  color: white;
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: bold;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(255, 107, 53, 0.4);
+  border: 2px solid #fff;
+  min-width: 60px;
+  animation: chipPulse 2s ease-in-out infinite;
+}
+
+@keyframes chipPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow: 0 4px 15px rgba(255, 107, 53, 0.4);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba(255, 107, 53, 0.6);
+  }
+}
+
+/* 手牌显示样式 - 放在玩家和桌子中心之间的直线上 */
+.player-seat-hole-cards {
+  z-index: 15;
+  pointer-events: none;
+}
+
+.player-seat-hole-cards-display {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.player-seat-hole-card {
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+  border: 2px solid #2c3e50;
+  border-radius: 8px;
+  padding: 6px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #2c3e50;
+  min-width: 35px;
+  text-align: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.player-seat-hole-card .card-value {
+  font-size: 14px;
+  font-weight: bold;
+}
+
+.player-seat-hole-card .card-suit {
+  font-size: 16px;
+}
+
+.player-seat-hole-card .card-suit.hearts,
+.player-seat-hole-card .card-suit.diamonds {
+  color: #e74c3c;
+}
+
+.player-seat-hole-card .card-suit.clubs,
+.player-seat-hole-card .card-suit.spades {
+  color: #2c3e50;
+}
+
+.player-seat-hole-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+}
+
+/* 设置手牌按钮样式 */
+.player-seat-set-cards-btn {
+  pointer-events: auto;
+}
+
+.set-cards-button {
+  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+  border: 2px solid #fff;
+}
+
+.set-cards-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
 }
 
 .player-seat-dealer-button {
@@ -152,12 +262,23 @@
 }
 
 .player-seat-action-btn.call {
+  background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
+  color: white;
+  box-shadow: 0 2px 6px rgba(33, 150, 243, 0.3);
+}
+
+.player-seat-action-btn.call:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(33, 150, 243, 0.4);
+}
+
+.player-seat-action-btn.check {
   background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%);
   color: white;
   box-shadow: 0 2px 6px rgba(76, 175, 80, 0.3);
 }
 
-.player-seat-action-btn.call:hover {
+.player-seat-action-btn.check:hover {
   transform: translateY(-1px);
   box-shadow: 0 4px 10px rgba(76, 175, 80, 0.4);
 }

@@ -755,37 +755,6 @@ const GameTable = () => {
         ))}
       </div>
 
-      {/* 新增：自己的手牌显示区域 */}
-      {showMyHoleCards && myPlayer && (
-        <div className="my-hole-cards-container">
-          <div className="my-hole-cards-header">
-            <button 
-              className="set-hole-cards-btn"
-              onClick={() => setShowHoleCardsSelector(true)}
-              disabled={loading}
-            >
-              设置手牌
-            </button>
-          </div>
-          <div className="my-hole-cards-display">
-            {myPlayer.holeCards && myPlayer.holeCards.length > 0 ? (
-              myPlayer.holeCards.map((card, index) => (
-                <div key={index} className="my-hole-card">
-                  <div className="card-value">{card.value}</div>
-                  <div className={`card-suit ${card.suit}`}>
-                    {card.suit === 'hearts' ? '♥' : 
-                     card.suit === 'diamonds' ? '♦' : 
-                     card.suit === 'clubs' ? '♣' : 
-                     card.suit === 'spades' ? '♠' : card.suit}
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className="no-cards">暂无手牌</div>
-            )}
-          </div>
-        </div>
-      )}
 
       <div className="game-table-controls">
         {gameState?.game?.status === 'waiting' && (
