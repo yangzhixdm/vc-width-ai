@@ -256,8 +256,8 @@ const PlayerSeat = ({
         const deltaY = tableCenterY - playerY;
 
         // 手牌位置：在玩家和桌子中心之间的1/3位置（更靠近玩家）
-        const cardX = playerX + deltaX * 0.3;
-        const cardY = playerY + deltaY * 0.3;
+        const cardX = playerX + deltaX * 0.35;
+        const cardY = playerY + deltaY * 0.35;
 
         return (
           <div
