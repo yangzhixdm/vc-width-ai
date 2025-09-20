@@ -219,8 +219,8 @@ const PlayerSeat = ({
         const deltaY = tableCenterY - playerY;
         
         // 筹码位置：在玩家和桌子中心之间的中点
-        const chipX = playerX + deltaX * 0.45;
-        const chipY = playerY + deltaY * 0.45;
+        const chipX = playerX + deltaX * 0.5;
+        const chipY = playerY + deltaY * 0.5;
         
         return (
           <div 
@@ -233,14 +233,56 @@ const PlayerSeat = ({
             }}
           >
             <div className="player-seat-bet-amount">
-              ${player.currentBet}
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" role="img" aria-label="3D green poker chip with dollar sign">
+                <defs>
+                  <radialGradient id="chipFill" cx="35%" cy="35%" r="70%">
+                    <stop offset="0%"  stop-color="#4CAF50"/>
+                    <stop offset="70%" stop-color="#2E7D32"/>
+                    <stop offset="100%" stop-color="#1B5E20"/>
+                  </radialGradient>
+
+                  <linearGradient id="ringStroke" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%"  stop-color="#FFFFFF"/>
+                    <stop offset="100%" stop-color="#C8E6C9"/>
+                  </linearGradient>
+                  <filter id="drop" x="-50%" y="-50%" width="200%" height="200%">
+                    <feDropShadow dx="0" dy="0.6" stdDeviation="0.7" flood-opacity="0.25"/>
+                  </filter>
+                  <clipPath id="chipClip"><circle cx="10" cy="10" r="9"/></clipPath>
+                  <linearGradient id="innerStroke" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%"  stop-color="#E0E0E0"/>
+                    <stop offset="100%" stop-color="#BDBDBD"/>
+                  </linearGradient>
+                </defs>
+
+                <g filter="url(#drop)">
+                  <circle cx="10" cy="10" r="9" fill="url(#chipFill)"/>
+                  <circle cx="10" cy="10" r="7" fill="none" stroke="url(#ringStroke)" stroke-width="2"/>
+                  <g stroke="#FFFFFF" stroke-opacity="0.9" stroke-width="2" stroke-linecap="round">
+                    <line x1="10" y1="2"  x2="10" y2="4"/>
+                    <line x1="10" y1="16" x2="10" y2="18"/>
+                    <line x1="2"  y1="10" x2="4"  y2="10"/>
+                    <line x1="16" y1="10" x2="18" y2="10"/>
+                    <line x1="15.3" y1="4.7" x2="16.4" y2="3.6"/>
+                    <line x1="4.7"  y1="4.7" x2="3.6"  y2="3.6"/>
+                    <line x1="4.7"  y1="15.3" x2="3.6"  y2="16.4"/>
+                    <line x1="15.3" y1="15.3" x2="16.4" y2="16.4"/>
+                  </g>
+                  <circle cx="10" cy="10" r="4.2" fill="#FFFFFF" stroke="url(#innerStroke)" stroke-width="0.6"/>
+                  <text x="10" y="12.8" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="6.2" font-weight="700" fill="#2E7D32">$</text>
+                  <g clip-path="url(#chipClip)" opacity="0.35">
+                    <path d="M -2,6 C 3,1 17,1 22,6 L 22,2 L -2,2 Z" fill="#FFFFFF"/>
+                  </g>
+                </g>
+              </svg>
+              {player.currentBet}
             </div>
           </div>
         );
       })()}
 
       {/* 手牌显示区域 - 只显示自己的手牌，放在玩家和桌子中心之间的直线上 */}
-      {isMe && (() => {
+      {(() => {
         // 桌子中心位置
         const tableCenterX = 400;
         const tableCenterY = 300;
@@ -254,8 +296,8 @@ const PlayerSeat = ({
         const deltaY = tableCenterY - playerY;
         
         // 手牌位置：在玩家和桌子中心之间的1/3位置（更靠近玩家）
-        const cardX = playerX + deltaX * 0.30;
-        const cardY = playerY + deltaY * 0.30;
+        const cardX = playerX + deltaX * 0.3;
+        const cardY = playerY + deltaY * 0.3;
         
         return (
           <div 
