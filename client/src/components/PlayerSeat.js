@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { User } from 'lucide-react';
+import { ReactComponent as ChipIcon } from '../icons/chips.svg';
 import './PlayerSeat.css';
 
 const PlayerSeat = ({
@@ -233,6 +234,7 @@ const PlayerSeat = ({
             }}
           >
             <div className="player-seat-bet-amount">
+              <ChipIcon/>
               {player.currentBet}
             </div>
           </div>
