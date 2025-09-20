@@ -18,6 +18,8 @@ import ChipAnimation from './ChipAnimation';
 import PotDisplay from './PotDisplay';
 import ChipLeaderboard from './ChipLeaderboard';
 import BuyInDialog from './BuyInDialog';
+import DealCardsAnimation from './DealCardsAnimation';
+import FlipCardsAnimation from './FlipCardsAnimation';
 import './GameTable.css';
 
 const GameTable = () => {
@@ -76,6 +78,13 @@ const GameTable = () => {
   // 新增：买入筹码的状态管理
   const [showBuyInDialog, setShowBuyInDialog] = useState(false);
   const [selectedPlayerForBuyIn, setSelectedPlayerForBuyIn] = useState(null);
+  
+  // 新增：发牌动画的状态管理
+  const [showDealCardsAnimation, setShowDealCardsAnimation] = useState(false);
+  
+  // 新增：翻牌动画的状态管理
+  const [showFlipCardsAnimation, setShowFlipCardsAnimation] = useState(false);
+  const [flipCardsRound, setFlipCardsRound] = useState('flop');
   
   // 使用 ref 来存储最新的 getGameState 函数引用
   const getGameStateRef = useRef(getGameState);
@@ -185,7 +194,7 @@ const GameTable = () => {
     }
   };
 
-  // 新增：触发筹码动画（从玩家到底池）
+  // 新增：触发筹码动画（从玩家到玩家下注筹码区域）
   const triggerChipAnimation = (playerId, amount) => {
     if (!gameState?.players || amount <= 0) return;
 
@@ -200,15 +209,22 @@ const GameTable = () => {
     const myPlayerIndex = myPlayerId ? gameState.players.findIndex(p => p.id === myPlayerId) : -1;
     const playerPosition = getAdjustedPlayerPosition(playerIndex, gameState.players.length, myPlayerIndex);
 
-    // 底池位置（桌子中心）
-    const potPosition = { x: 400, y: 300 }; // 桌子中心位置
+    // 计算玩家下注筹码区域位置（在玩家和桌子中心之间的中点）
+    const tableCenterX = 400;
+    const tableCenterY = 300;
+    const deltaX = tableCenterX - playerPosition.x;
+    const deltaY = tableCenterY - playerPosition.y;
+    const betChipsPosition = {
+      x: playerPosition.x + deltaX * 0.5,
+      y: playerPosition.y + deltaY * 0.5
+    };
 
     // 创建动画对象
     const animationId = Date.now() + Math.random();
     const newAnimation = {
       id: animationId,
       fromPosition: playerPosition,
-      toPosition: potPosition,
+      toPosition: betChipsPosition,
       amount: amount,
       isVisible: true
     };
@@ -488,6 +504,10 @@ const GameTable = () => {
       try {
         await setCommunityCards(gameId, communityCards, nextRound);
         setShowCommunityCardsSelector(false);
+        
+        // 触发翻牌动画
+        setFlipCardsRound(nextRound);
+        setShowFlipCardsAnimation(true);
       } catch (err) {
         console.error('Failed to set community cards:', err);
       }
@@ -548,6 +568,11 @@ const GameTable = () => {
     try {
       await startGame(gameId);
       console.log('Game started successfully');
+      
+      // 触发发牌动画
+      if (gameState?.players && gameState.players.length > 0) {
+        setShowDealCardsAnimation(true);
+      }
     } catch (err) {
       console.error('Failed to start game:', err);
     }
@@ -753,6 +778,22 @@ const GameTable = () => {
             onComplete={animation.onComplete}
           />
         ))}
+
+        {/* 发牌动画 */}
+        <DealCardsAnimation
+          players={players}
+          isVisible={showDealCardsAnimation}
+          onComplete={() => setShowDealCardsAnimation(false)}
+          myPlayerIndex={myPlayerIndex}
+        />
+
+        {/* 翻牌动画 */}
+        <FlipCardsAnimation
+          cards={game?.communityCards || []}
+          isVisible={showFlipCardsAnimation}
+          onComplete={() => setShowFlipCardsAnimation(false)}
+          round={flipCardsRound}
+        />
       </div>
 
 

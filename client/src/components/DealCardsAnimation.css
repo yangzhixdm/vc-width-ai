@@ -1,0 +1,110 @@
+/* DealCardsAnimation Component Styles */
+.deal-cards-animation-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1000;
+}
+
+.deal-card {
+  position: absolute;
+  left: var(--start-x);
+  top: var(--start-y);
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  transition: none;
+}
+
+.deal-card.animating {
+  opacity: 1;
+  animation: dealCardFly 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+.deal-card.completed {
+  opacity: 0;
+}
+
+.card {
+  width: 40px;
+  height: 56px;
+  border-radius: 6px;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.3s ease;
+}
+
+.card-back {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+  border: 2px solid #0f2a5c;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 
+    0 4px 8px rgba(0, 0, 0, 0.3),
+    inset 0 2px 4px rgba(255, 255, 255, 0.1),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.card-pattern {
+  width: 80%;
+  height: 80%;
+  background: 
+    radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.1) 2px, transparent 2px),
+    radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.1) 2px, transparent 2px),
+    radial-gradient(circle at 40% 60%, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    radial-gradient(circle at 60% 40%, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 8px 8px, 8px 8px, 4px 4px, 4px 4px;
+  border-radius: 4px;
+}
+
+@keyframes dealCardFly {
+  0% {
+    left: var(--start-x);
+    top: var(--start-y);
+    transform: translate(-50%, -50%) scale(0.8) rotateY(0deg);
+    opacity: 1;
+  }
+  
+  20% {
+    transform: translate(-50%, -50%) scale(1.1) rotateY(180deg);
+  }
+  
+  50% {
+    transform: translate(-50%, -50%) scale(1) rotateY(180deg);
+  }
+  
+  80% {
+    transform: translate(-50%, -50%) scale(1.05) rotateY(180deg);
+  }
+  
+  100% {
+    left: var(--end-x);
+    top: var(--end-y);
+    transform: translate(-50%, -50%) scale(0.9) rotateY(180deg);
+    opacity: 0.8;
+  }
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .card {
+    width: 35px;
+    height: 49px;
+  }
+  
+  .card-back {
+    border-radius: 5px;
+  }
+  
+  .card-pattern {
+    border-radius: 3px;
+  }
+}
